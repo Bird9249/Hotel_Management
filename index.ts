@@ -1,6 +1,6 @@
 import { serve } from "bun";
-import index from "./index.html";
 import compliedApp from "./server/main.js";
+import index from "./src/index.html";
 import app from "./src/server/index.js";
 
 const serverApi = process.env.NODE_ENV === "production" ? compliedApp : app;
