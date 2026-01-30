@@ -1,5 +1,5 @@
 import { mediaAssets } from "@/server/platform/db/schema";
-import { formatNow } from "@/shared/lib/date-time";
+import { nowISO } from "@/shared/lib/date-time";
 import type { DbTransaction } from "@/shared/types";
 import { eq } from "drizzle-orm";
 import type { UpdateMediaDTO } from "../contracts";
@@ -15,7 +15,7 @@ export async function updateMedia(
   },
   client: DbTransaction,
 ) {
-  const now = formatNow();
+  const now = nowISO();
   const values: Partial<MediaRow> & { updatedAt: string } = {
     updatedAt: now,
     ...(input.altText !== undefined ? { altText: input.altText } : {}),

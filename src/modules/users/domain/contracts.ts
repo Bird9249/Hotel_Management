@@ -40,11 +40,8 @@ export type IdParamDTO = z.infer<typeof IdParamSchema>;
 
 export const BanUserSchema = z.object({
   reason: z.string().max(255).optional(),
-  expires: z
-    .string()
-    .datetime()
-    .transform((s) => new Date(s))
-    .optional(),
+  /** ISO 8601 datetime string – รับจาก API เป็น string ตลอดสาย */
+  expires: z.iso.datetime().optional(),
 });
 export type BanUserDTO = z.infer<typeof BanUserSchema>;
 

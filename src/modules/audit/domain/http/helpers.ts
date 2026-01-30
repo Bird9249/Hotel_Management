@@ -1,3 +1,4 @@
+import { nowISO } from "@/shared/lib/date-time";
 import type { HonoContext } from "@/shared/types";
 import type { Context } from "hono";
 import type { AuditEvent, AuditResult } from "../audit.types";
@@ -15,7 +16,7 @@ export function buildAuditEvent(
   },
 ): AuditEvent {
   return {
-    occurredAt: new Date().toISOString(),
+    occurredAt: nowISO(),
     ...getAuditContext(c),
     action: params.action,
     entityType: params.entityType,

@@ -18,7 +18,7 @@ export async function getUserById(id: string, client: DbTransaction) {
         image: r.image ?? null,
         banned: r.banned ?? false,
         banReason: r.banReason ?? null,
-        banExpires: r.banExpires ? new Date(r.banExpires) : null,
+        banExpires: r.banExpires ?? null,
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,
       }

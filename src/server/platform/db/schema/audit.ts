@@ -4,7 +4,7 @@ export const auditLogs = pgTable(
   "audit_logs",
   {
     id: text("id").primaryKey(),
-    occurredAt: timestamp("occurred_at").notNull(),
+    occurredAt: timestamp("occurred_at", { mode: "string", withTimezone: true }).notNull(),
     requestId: text("request_id"),
     traceId: text("trace_id"),
     tenantId: text("tenant_id"),

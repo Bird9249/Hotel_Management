@@ -2,7 +2,7 @@ import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
 import type { PermissionId } from "@/modules/roles/domain/contracts/permissions";
 import { bunFileStorage } from "@/shared/files/bun-storage";
-import { formatNow } from "@/shared/lib/date-time";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import type { UpdateMediaDTO } from "../contracts";
 import { getMediaById } from "../repo/get-by-id";
@@ -110,7 +110,7 @@ export const updateMediaService = makeService<
     );
     await appendAudit(client, [
       {
-        occurredAt: formatNow(),
+        occurredAt: nowISO(),
         action: "MEDIA.UPDATE",
         entityType: "media",
         entityId: input.id,

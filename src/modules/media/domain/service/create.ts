@@ -1,7 +1,7 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
 import { bunFileStorage } from "@/shared/files/bun-storage";
-import { formatNow } from "@/shared/lib/date-time";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import { createMedia } from "../repo/create";
 
@@ -16,7 +16,7 @@ export const createMediaService = makeService<
 >({
   name: "mediaCreate",
   run: async (client, { files, altText, fileName, createdBy }) => {
-    const now = formatNow();
+    const now = nowISO();
     const results: Array<{ id: string }> = [];
 
     for (let index = 0; index < files.length; index++) {
@@ -82,7 +82,7 @@ export const createMediaService = makeService<
     await appendAudit(
       client,
       output.map((item) => ({
-        occurredAt: formatNow(),
+        occurredAt: nowISO(),
         action: "MEDIA.CREATE",
         entityType: "media",
         entityId: item.id,

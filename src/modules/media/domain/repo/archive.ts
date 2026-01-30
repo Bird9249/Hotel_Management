@@ -1,5 +1,5 @@
 import { mediaAssets } from "@/server/platform/db/schema";
-import { formatNow } from "@/shared/lib/date-time";
+import { nowISO } from "@/shared/lib/date-time";
 import type { DbTransaction } from "@/shared/types";
 import { eq } from "drizzle-orm";
 
@@ -7,7 +7,7 @@ export async function archiveMedia(
   id: string,
   client: DbTransaction,
 ): Promise<boolean> {
-  const now = formatNow();
+  const now = nowISO();
   const rows = await client
     .update(mediaAssets)
     .set({ archived: true, updatedAt: now })

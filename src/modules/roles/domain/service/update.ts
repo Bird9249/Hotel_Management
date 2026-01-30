@@ -1,7 +1,8 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
-import type { RoleUpdateInput } from "../contracts";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
+import type { RoleUpdateInput } from "../contracts";
 import { getRoleById } from "../repo/get-role-by-id";
 import { updateRole as updateRoleDb } from "../repo/update-role";
 
@@ -19,7 +20,7 @@ export const updateRoleService = makeService<
     const before = await getRoleById(input.id, client);
     await appendAudit(client, [
       {
-        occurredAt: new Date().toISOString(),
+        occurredAt: nowISO(),
         action: "RBAC.ROLE.UPDATE",
         entityType: "role",
         entityId: input.id,

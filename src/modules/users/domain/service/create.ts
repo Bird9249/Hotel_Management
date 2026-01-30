@@ -2,12 +2,13 @@ import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
 import { createCredentialAccount } from "@/modules/auth/domain/repo/create-account";
 import { bcryptLikeHasher } from "@/modules/auth/domain/services/password.bcrypt";
-import { assignRoleToUser } from "@/modules/roles/domain/repo/assign-role-to-user";
 import { USER_ROLES } from "@/modules/roles/domain/contracts/user-roles";
+import { assignRoleToUser } from "@/modules/roles/domain/repo/assign-role-to-user";
 import { bunFileStorage } from "@/shared/files/bun-storage";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
-import { createUser } from "../repo/create";
 import type { CreateUserDTO } from "../contracts";
+import { createUser } from "../repo/create";
 
 export const createUserService = makeService<
   { input: CreateUserDTO; imageFile?: File | null },
@@ -20,7 +21,7 @@ export const createUserService = makeService<
       const saved = await bunFileStorage.save(imageFile, "uploads");
       imageUrl = saved.url;
     }
-    const now = new Date().toISOString();
+    const now = nowISO();
     const created = await createUser(
       {
         email: input.email,
@@ -50,7 +51,7 @@ export const createUserService = makeService<
     if (!ctx) return;
     await appendAudit(client, [
       {
-        occurredAt: new Date().toISOString(),
+        occurredAt: nowISO(),
         action: "USER.CREATE",
         entityType: "user",
         entityId: output.id,

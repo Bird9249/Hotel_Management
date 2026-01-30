@@ -15,16 +15,16 @@ export const user = pgTable("user", {
   banned: boolean("banned"),
   banReason: text("ban_reason"),
   banExpires: date("ban_expires"),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull(),
-  updatedAt: timestamp("updated_at", { mode: "string" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "string", withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true }).notNull(),
 });
 
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
-  expiresAt: timestamp("expires_at", { mode: "string" }).notNull(),
+  expiresAt: timestamp("expires_at", { mode: "string", withTimezone: true }).notNull(),
   token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull(),
-  updatedAt: timestamp("updated_at", { mode: "string" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "string", withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true }).notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   userId: text("user_id")
@@ -47,21 +47,23 @@ export const account = pgTable("account", {
   idToken: text("id_token"),
   accessTokenExpiresAt: timestamp("access_token_expires_at", {
     mode: "string",
+    withTimezone: true,
   }),
   refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
     mode: "string",
+    withTimezone: true,
   }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull(),
-  updatedAt: timestamp("updated_at", { mode: "string" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "string", withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true }).notNull(),
 });
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
-  expiresAt: timestamp("expires_at", { mode: "string" }).notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }),
-  updatedAt: timestamp("updated_at", { mode: "string" }),
+  expiresAt: timestamp("expires_at", { mode: "string", withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { mode: "string", withTimezone: true }),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true }),
 });

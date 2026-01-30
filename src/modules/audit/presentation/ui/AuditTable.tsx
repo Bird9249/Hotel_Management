@@ -1,10 +1,11 @@
+import { formatDateTimeLocal } from "@/shared/lib/date-time";
 import { RowActions } from "@/shared/ui/RowActions";
 import {
-  Badge,
-  createExpandableColumn,
-  createSortableColumn,
-  DataTable,
-  type TanstackReactTable,
+    Badge,
+    createExpandableColumn,
+    createSortableColumn,
+    DataTable,
+    type TanstackReactTable,
 } from "@devhop/ui";
 import { EyeIcon } from "lucide-react";
 import type { AuditItem } from "../api/client";
@@ -41,7 +42,7 @@ export function AuditTable({
       size: 120,
       cell: ({ row }) => (
         <div className="whitespace-nowrap text-muted-foreground text-xs">
-          {new Date(row.original.occurredAt).toLocaleString()}
+          {formatDateTimeLocal(row.original.occurredAt)}
         </div>
       ),
     }),

@@ -1,5 +1,5 @@
 import { chunkUploadSessions, chunkUploads } from "@/server/platform/db/schema";
-import { formatNow } from "@/shared/lib/date-time";
+import { addHoursFromNowISO, nowISO } from "@/shared/lib/date-time";
 import { and, eq, sql } from "drizzle-orm";
 import { rmdir } from "node:fs/promises";
 import type { DbTransaction } from "../../../../shared/types";
@@ -18,9 +18,8 @@ export async function createChunkUploadSession(
   },
   client: DbTransaction,
 ) {
-  const now = formatNow();
-  const expiresAt =
-    data.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+  const now = nowISO();
+  const expiresAt = data.expiresAt ?? addHoursFromNowISO(24);
 
   const [session] = await client
     .insert(chunkUploadSessions)
@@ -61,7 +60,7 @@ export async function updateChunkUploadSession(
   }>,
   client: DbTransaction,
 ) {
-  const now = formatNow();
+  const now = nowISO();
 
   const [session] = await client
     .update(chunkUploadSessions)
@@ -242,7 +241,7 @@ export async function cleanupChunkRecords(
 
 // Clean up expired sessions
 export async function cleanupExpiredSessions(client: DbTransaction) {
-  const now = formatNow();
+  const now = nowISO();
 
   // Get expired sessions
   const expiredSessions = await client

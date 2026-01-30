@@ -8,10 +8,10 @@ import {
   upsertCondition,
   upsertOrGroup,
 } from "@/shared/contracts/query-helpers";
+import { formatDateForInput, parseISO } from "@/shared/lib/date-time";
 import { SimpleSelect } from "@/shared/ui/SimpleSelect";
 import { Button, DatePicker, Input, useDebounceCallback } from "@devhop/ui";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -127,8 +127,8 @@ export function AuditFilter() {
           <DatePicker
             mode="range"
             value={{
-              from: fromDate ? new Date(fromDate) : undefined,
-              to: toDate ? new Date(toDate) : undefined,
+              from: fromDate ? parseISO(fromDate) : undefined,
+              to: toDate ? parseISO(toDate) : undefined,
             }}
             onChange={(range) => {
               const from: Date | undefined = Array.isArray(range)
@@ -137,8 +137,8 @@ export function AuditFilter() {
               const to: Date | undefined = Array.isArray(range)
                 ? range[1]
                 : range?.to;
-              const fromStr = from ? format(from, "yyyy-MM-dd") : "";
-              const toStr = to ? format(to, "yyyy-MM-dd") : "";
+              const fromStr = from ? formatDateForInput(from) : "";
+              const toStr = to ? formatDateForInput(to) : "";
               setFromDate(fromStr);
               setToDate(toStr);
               let nextFilters: FilterConditionDTO[] | undefined = filters;

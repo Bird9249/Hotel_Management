@@ -1,19 +1,19 @@
-import { formatNow } from "@/shared/lib/date-time";
+import { nowISO } from "@/shared/lib/date-time";
 import { nanoid } from "nanoid";
 import { join } from "node:path";
 import { bunFileStorage } from "../../../../shared/files/bun-storage";
 import { makeService } from "../../../../shared/service";
 import type { CompleteUploadDTO, InitiateUploadDTO } from "../contracts";
 import {
-  cleanupChunkFiles,
-  cleanupChunkRecords,
-  countSessionChunks,
-  createChunkUpload,
-  createChunkUploadSession,
-  getChunkUpload,
-  getChunkUploadSession,
-  getSessionChunks,
-  updateChunkUploadSession,
+    cleanupChunkFiles,
+    cleanupChunkRecords,
+    countSessionChunks,
+    createChunkUpload,
+    createChunkUploadSession,
+    getChunkUpload,
+    getChunkUploadSession,
+    getSessionChunks,
+    updateChunkUploadSession,
 } from "../repo/chunk-upload";
 import { createMedia } from "../repo/create";
 
@@ -230,8 +230,8 @@ export const completeChunkUploadService = makeService<
           height: null,
           createdBy: session.createdBy,
           archived: false,
-          createdAt: formatNow(),
-          updatedAt: formatNow(),
+          createdAt: nowISO(),
+          updatedAt: nowISO(),
         },
         client,
       );

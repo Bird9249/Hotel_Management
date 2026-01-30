@@ -1,10 +1,10 @@
 import {
-  boolean,
-  index,
-  integer,
-  pgTable,
-  text,
-  timestamp,
+    boolean,
+    index,
+    integer,
+    pgTable,
+    text,
+    timestamp,
 } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import { user } from "./auth";
@@ -26,10 +26,10 @@ export const mediaAssets = pgTable(
       onDelete: "set null",
     }),
     archived: boolean("archived").notNull().default(false),
-    createdAt: timestamp("created_at", { mode: "string", withTimezone: false })
+    createdAt: timestamp("created_at", { mode: "string", withTimezone: true })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { mode: "string", withTimezone: false })
+    updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
       .notNull()
       .defaultNow(),
   },
@@ -65,11 +65,11 @@ export const chunkUploadSessions = pgTable(
     createdBy: text("created_by").references(() => user.id, {
       onDelete: "set null",
     }),
-    expiresAt: timestamp("expires_at", { mode: "string", withTimezone: false }),
-    createdAt: timestamp("created_at", { mode: "string", withTimezone: false })
+    expiresAt: timestamp("expires_at", { mode: "string", withTimezone: true }),
+    createdAt: timestamp("created_at", { mode: "string", withTimezone: true })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { mode: "string", withTimezone: false })
+    updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
       .notNull()
       .defaultNow(),
   },
@@ -98,7 +98,7 @@ export const chunkUploads = pgTable(
     tempFilePath: text("temp_file_path").notNull(),
     uploadedAt: timestamp("uploaded_at", {
       mode: "string",
-      withTimezone: false,
+      withTimezone: true,
     })
       .notNull()
       .defaultNow(),

@@ -1,6 +1,7 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
 import { bunFileStorage } from "@/shared/files/bun-storage";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import { removeUser } from "../repo/remove";
 
@@ -19,7 +20,7 @@ export const deleteUserService = makeService<{ id: string }, boolean>({
     if (!ctx || !output) return;
     await appendAudit(client, [
       {
-        occurredAt: new Date().toISOString(),
+        occurredAt: nowISO(),
         action: "USER.DELETE",
         entityType: "user",
         entityId: input.id,

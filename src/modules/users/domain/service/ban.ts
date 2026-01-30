@@ -1,5 +1,6 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import { banUser as banUserDb } from "../repo/user-ban";
 
@@ -7,7 +8,8 @@ export const banUserService = makeService<
   {
     id: string;
     reason?: string;
-    expires?: Date | null;
+    /** ISO 8601 datetime string – รับจาก API เป็น string ตลอดสาย */
+    expires?: string | null;
   },
   { ok: true }
 >({
@@ -20,7 +22,7 @@ export const banUserService = makeService<
     if (!ctx) return;
     await appendAudit(client, [
       {
-        occurredAt: new Date().toISOString(),
+        occurredAt: nowISO(),
         action: "USER.BAN",
         entityType: "user",
         entityId: input.id,

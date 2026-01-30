@@ -1,8 +1,9 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
-import type { RoleCreateInput } from "../contracts";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import { randomUUIDv7 } from "bun";
+import type { RoleCreateInput } from "../contracts";
 import { createRole as createRoleDb } from "../repo/create-role";
 
 export const createRoleService = makeService<
@@ -26,7 +27,7 @@ export const createRoleService = makeService<
     if (!ctx) return;
     await appendAudit(client, [
       {
-        occurredAt: new Date().toISOString(),
+        occurredAt: nowISO(),
         action: "RBAC.ROLE.CREATE",
         entityType: "role",
         entityId: output.id,

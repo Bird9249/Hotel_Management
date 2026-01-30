@@ -1,19 +1,19 @@
 import type { MediaListResult } from "@/modules/media/domain/types";
 import { config } from "@/shared/lib/config";
-import { formatDateTime } from "@/shared/lib/date-time";
+import { formatDateTimeLocal } from "@/shared/lib/date-time";
 import { RowActions } from "@/shared/ui/RowActions";
 import {
-  Badge,
-  createSortableColumn,
-  DataTable,
-  type TanstackReactTable,
+    Badge,
+    createSortableColumn,
+    DataTable,
+    type TanstackReactTable,
 } from "@devhop/ui";
 import {
-  ArchiveIcon,
-  ArchiveXIcon,
-  EditIcon,
-  FileIcon,
-  TrashIcon,
+    ArchiveIcon,
+    ArchiveXIcon,
+    EditIcon,
+    FileIcon,
+    TrashIcon,
 } from "lucide-react";
 
 type MediaRow = MediaListResult["data"][number];
@@ -124,7 +124,7 @@ export function MediaTable({
       size: 120,
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">
-          {formatDateTime(row.original.createdAt)}
+          {formatDateTimeLocal(row.original.createdAt)}
         </span>
       ),
     }),

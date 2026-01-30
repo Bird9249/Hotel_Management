@@ -1,10 +1,11 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
 import { bunFileStorage } from "@/shared/files/bun-storage";
+import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
+import type { UpdateUserDTO } from "../contracts";
 import { getUserById } from "../repo/get-by-id";
 import { updateUser as updateUserDb } from "../repo/update";
-import type { UpdateUserDTO } from "../contracts";
 
 export const updateUserService = makeService<
   {
@@ -43,7 +44,7 @@ export const updateUserService = makeService<
     const before = await getUserById(input.id, client);
     await appendAudit(client, [
       {
-        occurredAt: new Date().toISOString(),
+        occurredAt: nowISO(),
         action: "USER.UPDATE",
         entityType: "user",
         entityId: input.id,
