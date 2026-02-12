@@ -1,6 +1,6 @@
 import { useDisclosure } from "@/shared/hooks/useDisclosure";
-import { config } from "@/shared/lib/config";
 import { getInitials } from "@/shared/lib/utils";
+import { resolveImageSrc } from "@/shared/ui/AppImage";
 import {
   Avatar,
   AvatarFallback,
@@ -30,9 +30,7 @@ export function ProfileDropdown() {
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage
-                src={
-                  user?.image ? config.apiUrl + user.image : "/avatars/01.png"
-                }
+                src={resolveImageSrc(user?.image) ?? ""}
                 alt={user?.name ?? "user"}
               />
               <AvatarFallback>

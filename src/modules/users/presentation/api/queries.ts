@@ -39,7 +39,6 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: (input: CreateUserFormDTO) => usersApi.create(input),
     onSuccess: () => {
-      toast.success("User created");
       qc.invalidateQueries({ queryKey: usersKeys.all });
     },
     onError: () => toast.error("Failed to create user"),
@@ -49,15 +48,8 @@ export function useCreateUser() {
 export function useUpdateUser(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateUserFormDTO) =>
-      usersApi.update(id, {
-        ...input,
-        // Use explicit flag instead of empty File trick
-        imageDelete: input.imageFile === null ? "1" : undefined,
-        imageFile: input.imageFile ?? undefined,
-      }),
+    mutationFn: (input: UpdateUserFormDTO) => usersApi.update(id, input),
     onSuccess: () => {
-      toast.success("User updated");
       qc.invalidateQueries({ queryKey: usersKeys.detail(id) });
       qc.invalidateQueries({ queryKey: usersKeys.all });
     },

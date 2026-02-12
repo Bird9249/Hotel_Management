@@ -1,6 +1,7 @@
+import { resolveImageSrc } from "@/shared/ui/AppImage";
+import { AvatarDeferredUpload } from "@/shared/ui/AvatarDeferredUpload";
 import {
   Button,
-  FormAvatarUpload,
   FormInput,
   FormPassword,
   FormRoot,
@@ -14,44 +15,32 @@ const ProfileFormSchema = z
     name: z.string().min(1, "ຕ້ອງໃສ່ຊື່"),
     password: z.string().optional(),
     confirmPassword: z.string().optional(),
-    image: z.string().optional(),
+    image: z.string().optional().nullable(),
     imageFile: z.instanceof(File).optional().nullable(),
   })
-  .superRefine((val, ctx) => {
-    if (val.password) {
-      if (val.password.length < 6) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Password must be at least 6 characters",
-          path: ["password"],
-        });
-      }
-
-      if (!val.confirmPassword || val.confirmPassword.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Confirm password is required",
-          path: ["confirmPassword"],
-        });
-      } else if (val.confirmPassword !== val.password) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Passwords do not match",
-          path: ["confirmPassword"],
-        });
-      }
-    }
+  .refine((val) => !val.password || val.password.length >= 6, {
+    message: "ລະຫັດຜ່ານຕ້ອງຢ່າງນ້ອຍ 6 ຕົວອັກສອນ",
+    path: ["password"],
+  })
+  .refine(
+    (val) =>
+      !val.password ||
+      (val.confirmPassword != null && val.confirmPassword.length > 0),
+    { message: "ກະລຸນາໃສ່ຢືນຢັນລະຫັດຜ່ານ", path: ["confirmPassword"] },
+  )
+  .refine((val) => !val.password || val.password === val.confirmPassword, {
+    message: "ລະຫັດຜ່ານບໍ່ກົງກັນ",
+    path: ["confirmPassword"],
   });
 
 export type ProfileFormValues = z.infer<typeof ProfileFormSchema>;
 
 export function ProfileForm({
   initialValues,
-  submitting,
   onSubmit,
+  submitting,
 }: {
   initialValues?: Partial<ProfileFormValues>;
-  submitting?: boolean;
   onSubmit: (values: {
     name: string;
     password?: string;
@@ -59,6 +48,7 @@ export function ProfileForm({
     image?: string | null;
     imageFile?: File | null;
   }) => void;
+  submitting?: boolean;
 }) {
   const methods = RHF.useForm<ProfileFormValues>({
     resolver: zodResolver(ProfileFormSchema),
@@ -80,33 +70,56 @@ export function ProfileForm({
           name: vals.name,
           password: vals.password || undefined,
           confirmPassword: vals.confirmPassword || undefined,
-          image: typeof vals.image === "string" ? vals.image : undefined,
-          imageFile: vals.imageFile,
+          image: vals.image ?? undefined,
+          imageFile: vals.imageFile ?? undefined,
         })
       }
       className="space-y-4"
     >
-      <div>
-        <div className="mb-2 block text-sm">ຮູບໂປຣໄຟລ໌</div>
-        <FormAvatarUpload
+      <div data-tourid="form-avatar">
+        <RHF.Controller
           name="image"
-          fileFieldName="imageFile"
-          onFileSelect={(file) => methods.setValue("imageFile", file ?? null)}
-          hint="ອັບໂຫຼດຮູບໃໝ່"
-          maxSizeBytes={1024 * 1024 * 5}
+          control={methods.control}
+          render={({ field: imageField }) => (
+            <RHF.Controller
+              name="imageFile"
+              control={methods.control}
+              render={({ field: fileField }) => (
+                <AvatarDeferredUpload
+                  value={
+                    imageField.value
+                      ? resolveImageSrc(imageField.value)
+                      : undefined
+                  }
+                  imageFile={fileField.value ?? undefined}
+                  onChange={imageField.onChange}
+                  onFileSelect={fileField.onChange}
+                  hint="ເລືອກຮູບ ຈະອັບໂຫຼດເມື່ອກົດບັນທຶກ"
+                />
+              )}
+            />
+          )}
+        />
+      </div>
+      <div data-tourid="form-name">
+        <FormInput name="name" label="ຊື່" requiredMark placeholder="John Doe" />
+      </div>
+      <div data-tourid="form-password">
+        <FormPassword
+          name="password"
+          label="ລະຫັດຜ່ານໃໝ່"
+          placeholder="********"
+        />
+      </div>
+      <div data-tourid="form-confirm-password">
+        <FormPassword
+          name="confirmPassword"
+          label="ຢືນຢັນລະຫັດຜ່ານ"
+          placeholder="********"
         />
       </div>
 
-      <FormInput name="name" label="ຊື່" requiredMark placeholder="John Doe" />
-      {/* Email is read-only display; we keep it out of the editable form */}
-      <FormPassword name="password" label="ລະຫັດຜ່ານໃໝ່" placeholder="********" />
-      <FormPassword
-        name="confirmPassword"
-        label="ຢືນຢັນລະຫັດຜ່ານ"
-        placeholder="********"
-      />
-
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2" data-tourid="form-submit">
         <Button type="submit" isLoading={submitting}>
           ບັນທຶກການປ່ຽນແປງ
         </Button>

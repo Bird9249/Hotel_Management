@@ -35,7 +35,6 @@
     mode: "0755"
   loop:
     - "uploads"           # User avatars
-    - "uploads/media"     # Media assets
 
 - name: Link server public to shared uploads
   file:

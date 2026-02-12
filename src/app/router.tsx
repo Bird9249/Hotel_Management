@@ -93,12 +93,6 @@ const Forbidden = lazy(() =>
   })),
 );
 
-const MediaPage = lazy(() =>
-  import("@/modules/media/presentation/pages/MediaPage").then((module) => ({
-    default: module.MediaPage,
-  })),
-);
-
 const rootRoute = createRootRoute({
   component: RootLayout,
   errorComponent: ErrorBoundary,
@@ -120,16 +114,6 @@ const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
   component: AuthenticatedLayout,
-});
-
-const mediaRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: "/media",
-  component: () => (
-    <LazyPage>
-      <MediaPage />
-    </LazyPage>
-  ),
 });
 
 const dashboardRoute = createRoute({
@@ -271,7 +255,6 @@ export const routeTree = rootRoute.addChildren([
     auditRoute,
     auditDetailRoute,
     profileRoute,
-    mediaRoute,
   ]),
   forbiddenRoute,
 ]);

@@ -11,10 +11,16 @@ import {
 } from "better-auth/plugins";
 import { bcryptLikeHasher } from "./services";
 
+const baseURL =
+  process.env.BETTER_AUTH_BASE_URL ||
+  process.env.CORS_ORIGIN ||
+  "http://localhost:3000";
+
 export const auth = betterAuth({
   basePath: "/auth",
+  baseURL,
   database: drizzleAdapter(db, { provider: "pg", schema }),
-  trustedOrigins: [process.env.CORS_ORIGIN || "", "my-better-t-app://"],
+  trustedOrigins: [process.env.CORS_ORIGIN || ""],
   emailAndPassword: {
     enabled: true,
     password: {
@@ -26,6 +32,7 @@ export const auth = betterAuth({
   },
   advanced: {
     defaultCookieAttributes: { sameSite: "none", secure: true, httpOnly: true },
+    cookiePrefix: "admin-",
   },
   plugins: [
     admin(),

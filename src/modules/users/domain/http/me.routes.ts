@@ -31,16 +31,15 @@ export function registerMeRoutes() {
           name: input.name,
           password: input.password,
           roleId: undefined,
-          image: input.imageDelete ? null : input.image,
+          image: input.imageDelete ? null : (input.image ?? undefined),
         },
-        imageFile: input.imageFile,
       },
       c,
     );
     if (!result.ok)
       return c.json({ error: result.error }, result.status ?? 500);
     if (!result.value) return c.json({ error: "NOT_FOUND" }, 404);
-    return c.json({ user: result.value });
+    return c.json({ user: result.value.updated });
   });
 
   return r;

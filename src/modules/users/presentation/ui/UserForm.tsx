@@ -1,10 +1,11 @@
 import type { RoleDTO } from "@/modules/roles/presentation/api/client";
 import { config } from "@/shared/lib/config";
 import { fetchLookupForInfinite, hydrateLookupItem } from "@/shared/lib/utils";
+import { resolveImageSrc } from "@/shared/ui/AppImage";
+import { AvatarDeferredUpload } from "@/shared/ui/AvatarDeferredUpload";
 import { FormInfiniteCombobox } from "@/shared/ui/FormInfiniteCombobox";
 import {
   Button,
-  FormAvatarUpload,
   FormInput,
   FormPassword,
   FormRoot,
@@ -18,7 +19,7 @@ const UserFormSchema = z.object({
   name: z.string().min(1, "ຕ້ອງໃສ່ຊື່"),
   password: z.string().min(6, "ລະຫັດຜ່ານຕ້ອງຢ່າງນ້ອຍ 6 ຕົວອັກສອນ").optional(),
   roleId: z.string().min(1, "ຕ້ອງເລືອກບົດບາດ").optional(),
-  image: z.string().optional(),
+  image: z.string().optional().nullable(),
   imageFile: z.instanceof(File).optional().nullable(),
 });
 
@@ -68,22 +69,35 @@ export function UserForm({
           name: vals.name,
           password: vals.password || undefined,
           roleId: vals.roleId || undefined,
-          image: typeof vals.image === "string" ? vals.image : undefined,
-          imageFile: vals.imageFile,
+          image: vals.image ?? undefined,
+          imageFile: vals.imageFile ?? undefined,
         })
       }
       className="space-y-4"
     >
       <div data-tourid="form-avatar">
-        <div className="mb-2 block text-sm">ຮູບໂປຣໄຟລ໌</div>
-        <FormAvatarUpload
+        <RHF.Controller
           name="image"
-          fileFieldName="imageFile"
-          onFileSelect={(file) => {
-            methods.setValue("imageFile", file ?? null);
-          }}
-          hint="ອັບໂຫຼດຮູບໃໝ່"
-          maxSizeBytes={1024 * 1024 * 5}
+          control={methods.control}
+          render={({ field: imageField }) => (
+            <RHF.Controller
+              name="imageFile"
+              control={methods.control}
+              render={({ field: fileField }) => (
+                <AvatarDeferredUpload
+                  value={
+                    imageField.value
+                      ? resolveImageSrc(imageField.value)
+                      : undefined
+                  }
+                  imageFile={fileField.value ?? undefined}
+                  onChange={imageField.onChange}
+                  onFileSelect={fileField.onChange}
+                  hint="ເລືອກຮູບ ຈະອັບໂຫຼດເມື່ອກົດບັນທຶກ"
+                />
+              )}
+            />
+          )}
         />
       </div>
       <div data-tourid="form-email">

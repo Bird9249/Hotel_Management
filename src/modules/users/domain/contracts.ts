@@ -46,10 +46,11 @@ export const BanUserSchema = z.object({
 export type BanUserDTO = z.infer<typeof BanUserSchema>;
 
 // FormData specific schemas (for use with zValidator("form", ...))
+// image = key จาก presigned upload (อัปโหลดที่ frontend ก่อน submit)
 export const CreateUserFormSchema = zfd.formData({
   email: zfd.text(z.string().email()),
   name: zfd.text(z.string().min(1)),
-  imageFile: zfd.file(z.instanceof(File).optional()),
+  image: zfd.text(z.string().optional()),
   password: zfd.text(z.string().min(1)).optional(),
   roleId: zfd.text(z.string().min(1)).optional(),
 });
@@ -59,7 +60,6 @@ export const UpdateUserFormSchema = zfd.formData({
   email: zfd.text(z.string().email().optional()),
   name: zfd.text(z.string().min(1).optional()),
   image: zfd.text(z.string().optional()),
-  imageFile: zfd.file(z.instanceof(File).optional().nullable()),
   imageDelete: zfd.text(z.string().optional()),
   roleId: zfd.text(z.string().min(1).optional()),
   password: zfd.text(z.string().optional()),

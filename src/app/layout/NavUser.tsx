@@ -18,8 +18,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronsUpDown, LogOut, UserRound } from "lucide-react";
 import { useAuthState } from "@/modules/auth/presentation/model/useAuthState";
 import { useDisclosure } from "@/shared/hooks/useDisclosure";
-import { config } from "@/shared/lib/config";
 import { getInitials } from "@/shared/lib/utils";
+import { resolveImageSrc } from "@/shared/ui/AppImage";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -39,7 +39,7 @@ export function NavUser() {
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={user?.image ? `${config.apiUrl}${user.image}` : ""}
+                    src={resolveImageSrc(user?.image) ?? ""}
                     alt={user?.name ?? ""}
                   />
                   <AvatarFallback className="rounded-lg">
@@ -65,7 +65,7 @@ export function NavUser() {
                 <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage
-                      src={user?.image ? `${config.apiUrl}${user.image}` : ""}
+                      src={resolveImageSrc(user?.image) ?? ""}
                       alt={user?.name ?? ""}
                     />
                     <AvatarFallback className="rounded-lg">

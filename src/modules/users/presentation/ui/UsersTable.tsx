@@ -1,7 +1,7 @@
 import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
 import type { UsersListResult } from "@/modules/users/domain/types";
-import { config } from "@/shared/lib/config";
 import { getInitials } from "@/shared/lib/utils";
+import { resolveImageSrc } from "@/shared/ui/AppImage";
 import { RowActions } from "@/shared/ui/RowActions";
 import {
   Avatar,
@@ -64,11 +64,7 @@ export function UsersTable({
       cell: ({ row }: { row: { original: UserRow } }) => (
         <Avatar className="h-8 w-8">
           <AvatarImage
-            src={
-              row.original.image
-                ? config.apiUrl + row.original.image
-                : undefined
-            }
+            src={resolveImageSrc(row.original.image) ?? undefined}
             alt={row.original.name ?? "avatar"}
           />
           <AvatarFallback>

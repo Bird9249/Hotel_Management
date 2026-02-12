@@ -1,7 +1,7 @@
 import { registerAuditAPIRoutes } from "@/modules/audit/api";
 import { registerAuthRoutes } from "@/modules/auth/api";
-import { registerMediaAPI } from "@/modules/media/api";
 import { registerRolesAPIRoutes } from "@/modules/roles/api";
+import { registerUploadAPIRoutes } from "@/modules/upload/api";
 import { registerUsersAPIRoutes } from "@/modules/users/api";
 import type { HonoContext } from "@/shared/types";
 import type { Hono } from "hono";
@@ -12,7 +12,7 @@ export function registerRest(app: Hono<HonoContext>) {
   registerUsersAPIRoutes(app);
   registerRolesAPIRoutes(app);
   registerAuditAPIRoutes(app);
-  registerMediaAPI(app);
+  registerUploadAPIRoutes(app);
 
   return app;
 }

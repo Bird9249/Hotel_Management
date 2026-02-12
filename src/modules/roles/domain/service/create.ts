@@ -7,32 +7,28 @@ import type { RoleCreateInput } from "../contracts";
 import { createRole as createRoleDb } from "../repo/create-role";
 
 export const createRoleService = makeService<
-  RoleCreateInput,
-  {
-    id: string;
-    name: string;
-    description: string | null;
-    permissions: string[];
-  }
+  { input: RoleCreateInput },
+  { created: Awaited<ReturnType<typeof createRoleDb>> }
 >({
   name: "createRole",
-  run: async (client, input) => {
+  run: async (client, { input }) => {
     const created = await createRoleDb(
       { ...input, id: randomUUIDv7() },
       client,
     );
-    return created;
+    if (!created) throw new Error("Failed to create role");
+    return { created };
   },
   onSuccess: async ({ client, input, output, ctx }) => {
-    if (!ctx) return;
+    if (!ctx || !output?.created) return;
     await appendAudit(client, [
       {
         occurredAt: nowISO(),
         action: "RBAC.ROLE.CREATE",
         entityType: "role",
-        entityId: output.id,
+        entityId: output.created.id,
         result: "success",
-        after: { ...output, ...input },
+        after: { ...output.created, ...input.input },
         ...getAuditContext(ctx),
       },
     ]);

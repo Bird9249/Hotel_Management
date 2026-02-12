@@ -1,5 +1,6 @@
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
+import { uploadAvatarFile } from "@/shared/lib/upload-avatar";
 import { Button, toast } from "@devhop/ui";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeftIcon, HelpCircleIcon } from "lucide-react";
@@ -44,12 +45,16 @@ export function UserCreatePage() {
           <UserForm
             onSubmit={async (vals) => {
               try {
+                let imageKey = vals.image ?? undefined;
+                if (vals.imageFile instanceof File) {
+                  imageKey = await uploadAvatarFile(vals.imageFile);
+                }
                 await createUser.mutateAsync({
                   email: vals.email,
                   name: vals.name,
                   password: vals.password || undefined,
                   roleId: vals.roleId || undefined,
-                  imageFile: vals.imageFile || undefined,
+                  image: imageKey,
                 });
                 toast.success("ສ້າງຜູ້ໃຊ້ສໍາເລັດ", {
                   description: "ຜູ້ໃຊ້ຖືກສ້າງສໍາເລັດແລ້ວ",

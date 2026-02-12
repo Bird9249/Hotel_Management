@@ -5,15 +5,19 @@ import { makeService } from "@/shared/service";
 import { deleteRole as deleteRoleDb } from "../repo/delete-role";
 import { getRoleById } from "../repo/get-role-by-id";
 
-export const deleteRoleService = makeService<{ id: string }, { ok: true }>({
+export const deleteRoleService = makeService<
+  { id: string },
+  { deleted: Awaited<ReturnType<typeof getRoleById>> }
+>({
   name: "deleteRole",
   run: async (client, { id }) => {
+    const before = await getRoleById(id, client);
+    if (!before) throw new Error("Role not found");
     await deleteRoleDb(id, client);
-    return { ok: true } as const;
+    return { deleted: before };
   },
-  onSuccess: async ({ client, input, ctx }) => {
-    if (!ctx) return;
-    const before = await getRoleById(input.id, client);
+  onSuccess: async ({ client, input, output, ctx }) => {
+    if (!ctx || !output) return;
     await appendAudit(client, [
       {
         occurredAt: nowISO(),
@@ -21,7 +25,7 @@ export const deleteRoleService = makeService<{ id: string }, { ok: true }>({
         entityType: "role",
         entityId: input.id,
         result: "success",
-        before: before ?? undefined,
+        before: output.deleted ?? undefined,
         ...getAuditContext(ctx),
       },
     ]);

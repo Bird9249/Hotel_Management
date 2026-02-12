@@ -1,6 +1,6 @@
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
-import { config } from "@/shared/lib/config";
+import { uploadAvatarFile } from "@/shared/lib/upload-avatar";
 import { QueryState } from "@/shared/ui/QueryState";
 import { Button, toast } from "@devhop/ui";
 import { useNavigate, useParams } from "@tanstack/react-router";
@@ -62,17 +62,21 @@ export function UserEditPage() {
                     user.roleIds && user.roleIds.length > 0
                       ? (user.roleIds[0] ?? "")
                       : "",
-                  image: user.image ? config.apiUrl + user.image : undefined,
+                  image: user.image ?? undefined,
                 }}
                 onSubmit={async (vals) => {
                   try {
+                    let imageKey = vals.image ?? undefined;
+                    if (vals.imageFile instanceof File) {
+                      imageKey = await uploadAvatarFile(vals.imageFile);
+                    }
                     await updateUser.mutateAsync({
                       email: vals.email,
                       name: vals.name,
                       password: vals.password || undefined,
                       roleId: vals.roleId || undefined,
-                      image: vals.image || undefined,
-                      imageFile: vals.imageFile,
+                      image: imageKey,
+                      imageDelete: vals.image === null ? "1" : undefined,
                     });
                     toast.success("ແກ້ໄຂຜູ້ໃຊ້ສໍາເລັດ", {
                       description: "ຜູ້ໃຊ້ຖືກອັບເດດສໍາເລັດແລ້ວ",

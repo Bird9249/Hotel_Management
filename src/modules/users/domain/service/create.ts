@@ -4,29 +4,24 @@ import { createCredentialAccount } from "@/modules/auth/domain/repo/create-accou
 import { bcryptLikeHasher } from "@/modules/auth/domain/services/password.bcrypt";
 import { USER_ROLES } from "@/modules/roles/domain/contracts/user-roles";
 import { assignRoleToUser } from "@/modules/roles/domain/repo/assign-role-to-user";
-import { bunFileStorage } from "@/shared/files/bun-storage";
 import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import type { CreateUserDTO } from "../contracts";
 import { createUser } from "../repo/create";
 
 export const createUserService = makeService<
-  { input: CreateUserDTO; imageFile?: File | null },
-  { id: string }
+  { input: CreateUserDTO },
+  { created: Awaited<ReturnType<typeof createUser>> }
 >({
   name: "userCreate",
-  run: async (client, { input, imageFile }) => {
-    let imageUrl = input.image ?? null;
-    if (imageFile && imageFile.size > 0) {
-      const saved = await bunFileStorage.save(imageFile, "uploads");
-      imageUrl = saved.url;
-    }
+  run: async (client, { input }) => {
+    const imageKey = input.image?.trim() || null;
     const now = nowISO();
     const created = await createUser(
       {
         email: input.email,
         name: input.name ?? undefined,
-        image: imageUrl ?? null,
+        image: imageKey,
         emailVerified: false,
         banned: false,
         createdAt: now,
@@ -35,6 +30,11 @@ export const createUserService = makeService<
       },
       client,
     );
+
+    if (!created) {
+      throw new Error("Failed to create user");
+    }
+
     if (input.password) {
       const passwordHash = await bcryptLikeHasher.hash(input.password);
       await createCredentialAccount(
@@ -45,16 +45,17 @@ export const createUserService = makeService<
     if (input.roleId) {
       await assignRoleToUser(created.id, input.roleId, client);
     }
-    return created;
+    return { created };
   },
   onSuccess: async ({ client, input, output, ctx }) => {
     if (!ctx) return;
+    if (!output || !output.created) return;
     await appendAudit(client, [
       {
         occurredAt: nowISO(),
         action: "USER.CREATE",
         entityType: "user",
-        entityId: output.id,
+        entityId: output.created.id,
         result: "success",
         after: { ...output, ...input.input },
         ...getAuditContext(ctx),

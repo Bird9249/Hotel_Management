@@ -1,6 +1,6 @@
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
-import { config } from "@/shared/lib/config";
+import { uploadAvatarFile } from "@/shared/lib/upload-avatar";
 import { Card, CardContent, CardHeader, CardTitle, toast } from "@devhop/ui";
 import { useState } from "react";
 import { profileApi } from "../api/client";
@@ -31,19 +31,26 @@ export function ProfilePage() {
             <ProfileForm
               initialValues={{
                 name: user?.name ?? "",
-                image: user?.image ? config.apiUrl + user.image : undefined,
+                image: user?.image ?? undefined,
               }}
               submitting={submitting}
               onSubmit={async (vals) => {
                 setSubmitting(true);
                 try {
+                  let imageKey: string | null | undefined = vals.image ?? undefined;
+                  if (vals.imageFile instanceof File) {
+                    imageKey = await uploadAvatarFile(vals.imageFile);
+                  }
                   const fd = new FormData();
                   fd.append("name", vals.name);
                   if (vals.password) fd.append("password", vals.password);
-                  if (vals.imageFile === null) {
+                  if (vals.image === null && !vals.imageFile) {
                     fd.append("imageDelete", "1");
-                  } else if (vals.imageFile instanceof File) {
-                    fd.append("imageFile", vals.imageFile);
+                  } else if (
+                    typeof imageKey === "string" &&
+                    imageKey
+                  ) {
+                    fd.append("image", imageKey);
                   }
                   await profileApi.update(fd);
                   toast.success("ອັບເດດໂປຣໄຟລ໌ສໍາເລັດ");

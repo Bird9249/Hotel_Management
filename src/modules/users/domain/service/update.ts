@@ -1,6 +1,6 @@
 import { getAuditContext } from "@/modules/audit/domain/http/helpers";
 import { appendAudit } from "@/modules/audit/domain/services/append-audit";
-import { bunFileStorage } from "@/shared/files/bun-storage";
+import { deleteUserImage } from "@/server/utils/delete-user-image";
 import { nowISO } from "@/shared/lib/date-time";
 import { makeService } from "@/shared/service";
 import type { UpdateUserDTO } from "../contracts";
@@ -8,40 +8,42 @@ import { getUserById } from "../repo/get-by-id";
 import { updateUser as updateUserDb } from "../repo/update";
 
 export const updateUserService = makeService<
+  { id: string; input: UpdateUserDTO },
   {
-    id: string;
-    input: UpdateUserDTO;
-    imageFile?: File | null;
-  },
-  { id: string } | null
+    updated: Awaited<ReturnType<typeof updateUserDb>>;
+    before: Awaited<ReturnType<typeof getUserById>>;
+  }
 >({
   name: "userUpdate",
-  run: async (client, { id, input, imageFile }) => {
+  run: async (client, { id, input }) => {
     const existing = await getUserById(id, client);
-    if (!existing) return null;
+    if (!existing) throw new Error("User not found");
 
-    let next: UpdateUserDTO = { ...input };
-    let oldImageToDelete: string | null = null;
+    const nextImage =
+      input.image !== undefined
+        ? input.image === null || input.image === ""
+          ? null
+          : input.image.trim() || null
+        : existing.image;
 
-    if (imageFile && imageFile.size > 0) {
-      const saved = await bunFileStorage.save(imageFile, "uploads");
-      next = { ...next, image: saved.url };
-      oldImageToDelete = existing.image ?? null;
-    }
-    if (input.image === null && existing.image) {
-      next = { ...next, image: null };
-      oldImageToDelete = existing.image ?? null;
-    }
+    const imageChanged =
+      nextImage !== (existing.image ?? undefined) ||
+      (input.image !== undefined &&
+        (input.image === null || input.image === ""));
+    const oldImageToDelete =
+      imageChanged && existing.image ? existing.image : null;
 
+    const next: UpdateUserDTO = { ...input, image: nextImage };
     const updated = await updateUserDb(id, next, client);
-    if (updated && oldImageToDelete) {
-      await bunFileStorage.deleteByUrl(oldImageToDelete);
+    if (!updated) throw new Error("Failed to update user");
+    if (oldImageToDelete) {
+      await deleteUserImage(oldImageToDelete);
     }
-    return updated;
+    return { updated, before: existing };
   },
   onSuccess: async ({ client, input, output, ctx }) => {
     if (!ctx || !output) return;
-    const before = await getUserById(input.id, client);
+    if (!output || "error" in output) return;
     await appendAudit(client, [
       {
         occurredAt: nowISO(),
@@ -49,8 +51,8 @@ export const updateUserService = makeService<
         entityType: "user",
         entityId: input.id,
         result: "success",
-        before: before ?? undefined,
-        after: output,
+        before: output.before ?? undefined,
+        after: output.updated ?? undefined,
         ...getAuditContext(ctx),
       },
     ]);

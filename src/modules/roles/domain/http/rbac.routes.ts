@@ -107,10 +107,10 @@ export function registerRbacRoutes() {
     async (c) => {
       const client = c.get("db");
       const body = c.req.valid("json");
-      const result = await createRoleService(client, body, c);
+      const result = await createRoleService(client, { input: body }, c);
       if (!result.ok)
         return c.json({ error: result.error }, result.status ?? 500);
-      return c.json(result, 201);
+      return c.json(result.value.created, 201);
     },
   );
 
@@ -125,15 +125,13 @@ export function registerRbacRoutes() {
       const body = c.req.valid("json");
       const result = await updateRoleService(
         client,
-        {
-          id,
-          input: body,
-        },
+        { id, input: body },
         c,
       );
       if (!result.ok)
         return c.json({ error: result.error }, result.status ?? 500);
-      return c.json(result);
+      if (!result.value) return c.json({ error: "NOT_FOUND" }, 404);
+      return c.json(result.value.updated);
     },
   );
 
@@ -147,7 +145,8 @@ export function registerRbacRoutes() {
       const result = await deleteRoleService(client, { id }, c);
       if (!result.ok)
         return c.json({ error: result.error }, result.status ?? 500);
-      return c.json(result);
+      if (!result.value?.deleted) return c.json({ error: "NOT_FOUND" }, 404);
+      return c.json(result.value.deleted);
     },
   );
 

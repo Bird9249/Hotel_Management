@@ -8,16 +8,21 @@ import { updateRole as updateRoleDb } from "../repo/update-role";
 
 export const updateRoleService = makeService<
   { id: string; input: RoleUpdateInput },
-  { id: string }
+  {
+    updated: Awaited<ReturnType<typeof updateRoleDb>>;
+    before: Awaited<ReturnType<typeof getRoleById>>;
+  }
 >({
   name: "updateRole",
   run: async (client, { id, input }) => {
-    const after = await updateRoleDb(id, input, client);
-    return after;
+    const before = await getRoleById(id, client);
+    if (!before) throw new Error("Role not found");
+    const updated = await updateRoleDb(id, input, client);
+    if (!updated) throw new Error("Failed to update role");
+    return { updated, before };
   },
   onSuccess: async ({ client, input, output, ctx }) => {
-    if (!ctx) return;
-    const before = await getRoleById(input.id, client);
+    if (!ctx || !output) return;
     await appendAudit(client, [
       {
         occurredAt: nowISO(),
@@ -25,8 +30,8 @@ export const updateRoleService = makeService<
         entityType: "role",
         entityId: input.id,
         result: "success",
-        before: before ?? undefined,
-        after: output,
+        before: output.before ?? undefined,
+        after: output.updated ?? undefined,
         ...getAuditContext(ctx),
       },
     ]);

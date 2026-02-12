@@ -1,9 +1,14 @@
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
-import { BanUserSchema, CreateUserFormSchema, IdParamSchema, UpdateUserFormSchema } from "../contracts";
 import type { HonoContext } from "@/shared/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import {
+  BanUserSchema,
+  CreateUserFormSchema,
+  IdParamSchema,
+  UpdateUserFormSchema,
+} from "../contracts";
 import { getUserById } from "../repo/get-by-id";
 import { listUsers } from "../repo/list";
 import { banUserService } from "../service/ban";
@@ -59,14 +64,14 @@ export function registerUsersRoutes() {
             name: input.name,
             password: input.password,
             roleId: input.roleId,
+            image: input.image ?? undefined,
           },
-          imageFile: input.imageFile,
         },
         c,
       );
       if (!result.ok)
         return c.json({ error: result.error }, result.status ?? 500);
-      return c.json(result, 201);
+      return c.json(result.value.created, 201);
     },
   );
 
@@ -89,16 +94,15 @@ export function registerUsersRoutes() {
             name: input.name,
             roleId: input.roleId,
             password: input.password,
-            image: input.imageDelete ? null : input.image,
+            image: input.imageDelete ? null : (input.image ?? undefined),
           },
-          imageFile: input.imageFile,
         },
         c,
       );
       if (!result.ok)
         return c.json({ error: result.error }, result.status ?? 500);
       if (!result.value) return c.json({ error: "NOT_FOUND" }, 404);
-      return c.json(result);
+      return c.json(result.value.updated);
     },
   );
 
@@ -114,7 +118,7 @@ export function registerUsersRoutes() {
       if (!result.ok)
         return c.json({ error: result.error }, result.status ?? 500);
       if (!result.value) return c.json({ error: "NOT_FOUND" }, 404);
-      return c.json(result);
+      return c.json(result.value.deleted);
     },
   );
 

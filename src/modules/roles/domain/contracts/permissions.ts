@@ -9,9 +9,6 @@ export const Permissions = {
   audit: {
     read: "audit:read",
   },
-  media: {
-    all: "media:all",
-  },
 } as const;
 
 export const ALL_PERMISSIONS = Object.entries(Permissions).flatMap(
@@ -25,7 +22,6 @@ export type PermissionId = (typeof ALL_PERMISSIONS)[number]["id"];
 export const RESOURCE_LABELS: Record<string, string> = {
   users: "ຜູ້ໃຊ້",
   audit: "ບັນທຶກການກວດກາ",
-  media: "ສື່",
 };
 
 export const ACTION_LABELS: Record<string, string> = {
