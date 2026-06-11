@@ -10,6 +10,7 @@ import type {
   CheckOutServiceResult,
   CreateReservationServiceResult,
   ReservationByIdResult,
+  ReservationInvoiceResult,
   ReservationsListResult,
   UpdateReservationServiceResult,
 } from "@/modules/reservations/domain/types";
@@ -70,6 +71,11 @@ export const reservationsApi = {
     return fetcher.post<CheckOutServiceResult["updated"]>(
       `${hotelBase}/reservations/${id}/check-out`,
       {},
+    );
+  },
+  async getInvoice(reservationId: string) {
+    return fetcher.get<ReservationInvoiceResult>(
+      `${hotelBase}/reservations/${reservationId}/invoice`,
     );
   },
 };

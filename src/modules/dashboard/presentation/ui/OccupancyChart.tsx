@@ -11,7 +11,12 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
+  Skeleton,
 } from "@/components/kit";
+import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
+import { useOccupancyQuery } from "@/modules/reports/presentation/api/queries";
+import { defaultReportParams } from "@/modules/reports/presentation/ui/DateRangePicker";
+import { OccupancyChart as ReportOccupancyChart } from "@/modules/reports/presentation/ui/OccupancyChart";
 import { occupancyData } from "../data/mock";
 
 const chartConfig = {
@@ -20,11 +25,43 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function OccupancyChart() {
+  const { has } = usePermissions();
+  const canReadReports = has("reports:read");
+  const occupancy = useOccupancyQuery(defaultReportParams());
+
+  if (canReadReports) {
+    if (occupancy.isLoading) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle>ອັດຕາເຂົ້າພັກ 7 ວັນ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[260px] w-full" />
+          </CardContent>
+        </Card>
+      );
+    }
+    if (occupancy.data && occupancy.data.length > 0) {
+      return (
+        <ReportOccupancyChart data={occupancy.data} title="ອັດຕາເຂົ້າພັກ 7 ວັນ" />
+      );
+    }
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>ອັດຕາເຂົ້າພັກ 7 ວັນ</CardTitle>
+          <CardDescription>ຍັງບໍ່ມີຂໍ້ມູນ</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>ອັດຕາການເຂົ້າພັກ</CardTitle>
-        <CardDescription>ລາຍອາທິດນີ້</CardDescription>
+        <CardDescription>ລາຍອາທິດນີ້ (ຕົວຢ່າງ)</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[260px] w-full">

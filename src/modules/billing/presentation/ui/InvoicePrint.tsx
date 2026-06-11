@@ -1,7 +1,11 @@
 import { format } from "date-fns";
 import type { InvoiceByIdResult } from "@/modules/billing/domain/types";
 import { InvoiceStatusBadge } from "./InvoiceStatusBadge";
-import { formatMoney, getPaymentMethodLabel } from "./invoice-status";
+import {
+  displayInvoiceNumber,
+  formatMoney,
+  getPaymentMethodLabel,
+} from "./invoice-status";
 
 export function InvoicePrint({ invoice }: { invoice: InvoiceByIdResult }) {
   if (!invoice) return null;
@@ -11,7 +15,9 @@ export function InvoicePrint({ invoice }: { invoice: InvoiceByIdResult }) {
       <div className="border-b pb-4 text-center">
         <h1 className="font-bold text-2xl">ໃບບິນໂຮງແຮມ</h1>
         <p className="text-sm">Hotel Management System</p>
-        <p className="mt-2 font-mono text-xs">{invoice.id}</p>
+        <p className="mt-2 font-mono text-sm">
+          {displayInvoiceNumber(invoice.id)}
+        </p>
       </div>
 
       <div className="grid gap-1 text-sm sm:grid-cols-2">

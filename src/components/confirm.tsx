@@ -109,23 +109,38 @@ export function confirm(options: ConfirmOptions): Promise<boolean> {
 export function Confirmer() {
   const [request, setRequest] = React.useState<ConfirmRequest | null>(null);
   const [open, setOpen] = React.useState(false);
+  const clearRequestTimeoutRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   React.useEffect(() => {
     listener = (req) => {
       if (req) {
+        if (clearRequestTimeoutRef.current) {
+          clearTimeout(clearRequestTimeoutRef.current);
+          clearRequestTimeoutRef.current = null;
+        }
         setRequest(req);
         setOpen(true);
       }
     };
     return () => {
       listener = null;
+      if (clearRequestTimeoutRef.current) {
+        clearTimeout(clearRequestTimeoutRef.current);
+        clearRequestTimeoutRef.current = null;
+      }
     };
   }, []);
 
   const finish = (value: boolean) => {
+    const finishedId = request?.id;
     request?.resolve(value);
     setOpen(false);
-    window.setTimeout(() => setRequest(null), 200);
+    clearRequestTimeoutRef.current = setTimeout(() => {
+      setRequest((prev) => (prev?.id === finishedId ? null : prev));
+      clearRequestTimeoutRef.current = null;
+    }, 200);
   };
 
   const tone = resolveTone(request);

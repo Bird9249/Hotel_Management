@@ -195,6 +195,11 @@ const InvoiceDetailPage = lazy(() =>
     }),
   ),
 );
+const ReportsPage = lazy(() =>
+  import("@/modules/reports/presentation/pages/ReportsPage").then((module) => ({
+    default: module.ReportsPage,
+  })),
+);
 const Forbidden = lazy(() =>
   import("./error/Forbidden").then((module) => ({
     default: module.Forbidden,
@@ -539,6 +544,18 @@ const invoiceDetailRoute = createRoute({
   ),
 });
 
+const reportsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/reports",
+  component: () => (
+    <RequirePermissions all={["reports:read"]}>
+      <LazyPage>
+        <ReportsPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors/forbidden",
@@ -578,6 +595,7 @@ export const routeTree = rootRoute.addChildren([
     housekeepingRoute,
     invoicesRoute,
     invoiceDetailRoute,
+    reportsRoute,
   ]),
   forbiddenRoute,
 ]);

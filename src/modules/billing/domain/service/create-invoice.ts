@@ -8,6 +8,7 @@ import { getInvoiceById } from "../repo/get-invoice-by-id";
 import { getInvoiceByReservationId } from "../repo/get-invoice-by-reservation";
 import { getReservationForBilling } from "../repo/get-reservation-for-billing";
 import { insertInvoiceItems } from "../repo/insert-invoice-items";
+import { nextInvoiceNumber } from "../repo/next-invoice-number";
 
 function countNights(checkIn: string, checkOut: string) {
   const nights = differenceInCalendarDays(
@@ -26,8 +27,9 @@ export async function createInvoiceService(
     client,
   );
   if (!res) throw new Error("RESERVATION_NOT_FOUND");
-  if (res.status !== "checked_out")
+  if (res.status !== "checked_in" && res.status !== "checked_out") {
     throw new Error("INVALID_RESERVATION_STATE");
+  }
 
   const existing = await getInvoiceByReservationId(res.id, client);
   if (existing) throw new Error("INVOICE_EXISTS");
@@ -62,7 +64,7 @@ export async function createInvoiceService(
   const taxAmount = calcTax(subtotal, taxRate);
   const total = Number((subtotal + taxAmount).toFixed(2));
 
-  const invoiceId = randomUUIDv7();
+  const invoiceId = await nextInvoiceNumber(client);
   const created = await createInvoiceDb(
     {
       id: invoiceId,

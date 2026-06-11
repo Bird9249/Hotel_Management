@@ -1,15 +1,12 @@
 #!/usr/bin/env bun
 
 import { addDays, format } from "date-fns";
-import { like } from "drizzle-orm";
 import { db } from "@/server/platform/db/client";
-import { invoice } from "@/server/platform/db/schema/billing";
 import { guest } from "@/server/platform/db/schema/hotel-guests";
 import { reservation } from "@/server/platform/db/schema/reservations";
 import { room, roomType } from "@/server/platform/db/schema/rooms";
 import { logger } from "@/server/platform/observability/logger";
-
-const DEMO_PREFIX = "demo-";
+import { clearDemoSeedData, DEMO_PREFIX } from "./demo-seed-shared";
 
 function isoDate(date: Date) {
   return format(date, "yyyy-MM-dd");
@@ -215,15 +212,7 @@ async function seedHotelDemo() {
 
     await db.transaction(async (tx) => {
       logger.info("Clearing previous demo data...");
-      await tx
-        .delete(invoice)
-        .where(like(invoice.reservationId, `${DEMO_PREFIX}%`));
-      await tx
-        .delete(reservation)
-        .where(like(reservation.id, `${DEMO_PREFIX}%`));
-      await tx.delete(guest).where(like(guest.id, `${DEMO_PREFIX}%`));
-      await tx.delete(room).where(like(room.id, `${DEMO_PREFIX}%`));
-      await tx.delete(roomType).where(like(roomType.id, `${DEMO_PREFIX}%`));
+      await clearDemoSeedData(tx);
 
       logger.info("Seeding room types...");
       await tx.insert(roomType).values([...DEMO_ROOM_TYPES]);

@@ -8,7 +8,7 @@ import {
 import { RowActions } from "@/shared/ui/RowActions";
 import type { InvoiceDTO } from "../api/client";
 import { InvoiceStatusBadge } from "./InvoiceStatusBadge";
-import { formatMoney } from "./invoice-status";
+import { displayInvoiceNumber, formatMoney } from "./invoice-status";
 
 type InvoicesTableProps = {
   isLoading: boolean;
@@ -41,7 +41,7 @@ export function InvoicesTable({
       header: "ເລກທີ",
       cell: ({ row }) => (
         <span className="font-mono text-xs">
-          {row.original.id.slice(0, 8)}…
+          {displayInvoiceNumber(row.original.id)}
         </span>
       ),
       size: 100,

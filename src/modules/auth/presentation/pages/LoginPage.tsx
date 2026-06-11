@@ -1,44 +1,16 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/kit";
 import SignInForm from "../ui/SignInForm";
 
 export function LoginPage() {
   return (
-    <Card className="w-full gap-4">
-      <CardHeader>
-        <CardTitle className="text-lg tracking-tight">ເຂົ້າລະບົບ</CardTitle>
-        <CardDescription>
-          ໃສ່ອີເມວ ແລະ ລະຫັດຜ່ານຂ້າງລຸ່ມນີ້ <br />
-          ເພື່ອເຂົ້າໃຊ້ບັນຊີຂອງທ່ານ
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <SignInForm />
-      </CardContent>
-      {/* <CardFooter>
-        <p className="px-8 text-center text-muted-foreground text-sm">
-          By clicking sign in, you agree to our{" "}
-          <a
-            href="/terms"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a
-            href="/privacy"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Privacy Policy
-          </a>
-          .
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-semibold text-2xl tracking-tight">ເຂົ້າລະບົບ</h1>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          ໃສ່ອີເມວ ແລະ ລະຫັດຜ່ານເພື່ອເຂົ້າໃຊ້ລະບົບຈັດການໂຮງແຮມ
         </p>
-      </CardFooter> */}
-    </Card>
+      </div>
+
+      <SignInForm />
+    </div>
   );
 }

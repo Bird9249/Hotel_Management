@@ -1,13 +1,10 @@
 #!/usr/bin/env bun
 
-import { like } from "drizzle-orm";
 import { addPaymentService } from "@/modules/billing/domain/service/add-payment";
 import { createInvoiceService } from "@/modules/billing/domain/service/create-invoice";
 import { db } from "@/server/platform/db/client";
-import { invoice } from "@/server/platform/db/schema/billing";
 import { logger } from "@/server/platform/observability/logger";
-
-const DEMO_PREFIX = "demo-";
+import { clearDemoBillingData, DEMO_PREFIX } from "./demo-seed-shared";
 
 const DEMO_RES_DONE = `${DEMO_PREFIX}res-done`;
 const DEMO_RES_DONE_2 = `${DEMO_PREFIX}res-done-2`;
@@ -18,9 +15,7 @@ async function seedBillingDemo() {
 
     await db.transaction(async (tx) => {
       logger.info("Clearing previous demo billing data...");
-      await tx
-        .delete(invoice)
-        .where(like(invoice.reservationId, `${DEMO_PREFIX}%`));
+      await clearDemoBillingData(tx);
 
       logger.info("Creating invoice for completed stay (unpaid)...");
       const { created: unpaid } = await createInvoiceService(tx, {

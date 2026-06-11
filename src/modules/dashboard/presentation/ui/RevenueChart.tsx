@@ -9,7 +9,12 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  Skeleton,
 } from "@/components/kit";
+import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
+import { useDailySalesQuery } from "@/modules/reports/presentation/api/queries";
+import { defaultReportParams } from "@/modules/reports/presentation/ui/DateRangePicker";
+import { SalesChart } from "@/modules/reports/presentation/ui/SalesChart";
 import { revenueData } from "../data/mock";
 
 const chartConfig = {
@@ -18,11 +23,49 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function RevenueChart() {
+  const { has } = usePermissions();
+  const canReadReports = has("reports:read");
+  const sales = useDailySalesQuery(defaultReportParams());
+
+  if (canReadReports) {
+    if (sales.isLoading) {
+      return (
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>ລາຍຮັບ 7 ວັນຫຼ້າສຸດ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[260px] w-full" />
+          </CardContent>
+        </Card>
+      );
+    }
+    if (sales.data && sales.data.length > 0) {
+      return (
+        <div className="lg:col-span-2">
+          <SalesChart
+            data={sales.data}
+            title="ລາຍຮັບ 7 ວັນຫຼ້າສຸດ"
+            description="ແຍກຕາມຊ່ອງທາງຊຳລະ"
+          />
+        </div>
+      );
+    }
+    return (
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>ລາຍຮັບ 7 ວັນຫຼ້າສຸດ</CardTitle>
+          <CardDescription>ຍັງບໍ່ມີຂໍ້ມູນການຊຳລະ</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
         <CardTitle>ພາບລວມລາຍຮັບ</CardTitle>
-        <CardDescription>6 ເດືອນຫຼ້າສຸດ</CardDescription>
+        <CardDescription>6 ເດືອນຫຼ້າສຸດ (ຕົວຢ່າງ)</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[260px] w-full">
@@ -37,18 +80,6 @@ export function RevenueChart() {
                 <stop
                   offset="95%"
                   stopColor="var(--color-revenue)"
-                  stopOpacity={0.05}
-                />
-              </linearGradient>
-              <linearGradient id="fillBookings" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-bookings)"
-                  stopOpacity={0.6}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-bookings)"
                   stopOpacity={0.05}
                 />
               </linearGradient>
@@ -67,15 +98,6 @@ export function RevenueChart() {
               fill="url(#fillRevenue)"
               stroke="var(--color-revenue)"
               strokeWidth={2}
-              stackId="a"
-            />
-            <Area
-              dataKey="bookings"
-              type="natural"
-              fill="url(#fillBookings)"
-              stroke="var(--color-bookings)"
-              strokeWidth={2}
-              stackId="b"
             />
           </AreaChart>
         </ChartContainer>

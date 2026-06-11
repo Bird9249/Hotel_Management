@@ -1,12 +1,11 @@
 import {
-  AudioWaveform,
   BedDouble,
   BrushCleaning,
   CalendarCheck,
   CalendarDays,
-  Command,
+  ChartColumn,
   ConciergeBell,
-  GalleryVerticalEnd,
+  Hotel,
   LayoutDashboard,
   ReceiptText,
   ShieldCheck,
@@ -18,23 +17,11 @@ import {
 import type { SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
-  teams: [
-    {
-      name: "Shadcn Admin",
-      logo: Command,
-      plan: "Vite + ShadcnUI",
-    },
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-  ],
+  brand: {
+    name: "ລະບົບຈັດການໂຮງແຮມ",
+    tagline: "Hotel Management",
+    logo: Hotel,
+  },
   navGroups: [
     {
       title: "ທົ່ວໄປ",
@@ -47,20 +34,8 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: "ໂຮງແຮມ",
+      title: "ການດຳເນີນງານ",
       items: [
-        {
-          title: "ຫ້ອງພັກ",
-          url: "/app/rooms",
-          icon: BedDouble,
-          requiredPermissions: ["rooms:read"],
-        },
-        {
-          title: "ປະເພດຫ້ອງ",
-          url: "/app/room-types",
-          icon: Tags,
-          requiredPermissions: ["rooms:read"],
-        },
         {
           title: "ໜ້າຮັບແຂກ",
           url: "/app/front-desk",
@@ -85,6 +60,34 @@ export const sidebarData: SidebarData = {
           icon: UserRound,
           requiredPermissions: ["guests:read"],
         },
+      ],
+    },
+    {
+      title: "ຫ້ອງພັກ",
+      items: [
+        {
+          title: "ຫ້ອງພັກ",
+          url: "/app/rooms",
+          icon: BedDouble,
+          requiredPermissions: ["rooms:read"],
+        },
+        {
+          title: "ປະເພດຫ້ອງ",
+          url: "/app/room-types",
+          icon: Tags,
+          requiredPermissions: ["rooms:read"],
+        },
+        {
+          title: "ທຳຄວາມສະອາດ",
+          url: "/app/housekeeping",
+          icon: BrushCleaning,
+          requiredPermissions: ["rooms:status"],
+        },
+      ],
+    },
+    {
+      title: "ການເງິນ & ລາຍງານ",
+      items: [
         {
           title: "ໃບບິນ",
           url: "/app/invoices",
@@ -92,10 +95,10 @@ export const sidebarData: SidebarData = {
           requiredPermissions: ["billing:read"],
         },
         {
-          title: "ທຳຄວາມສະອາດ",
-          url: "/app/housekeeping",
-          icon: BrushCleaning,
-          requiredPermissions: ["rooms:status"],
+          title: "ລາຍງານ",
+          url: "/app/reports",
+          icon: ChartColumn,
+          requiredPermissions: ["reports:read"],
         },
       ],
     },

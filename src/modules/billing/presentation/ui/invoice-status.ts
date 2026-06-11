@@ -14,6 +14,11 @@ export const PAYMENT_METHOD_OPTIONS = [
   { value: "credit_card", label: "ບັດເຄຣດິດ" },
 ] as const;
 
+export {
+  displayInvoiceNumber,
+  isFormattedInvoiceNumber,
+} from "@/modules/billing/domain/lib/invoice-number";
+
 export function formatMoney(value: string | number) {
   return Number(value).toLocaleString("lo-LA", {
     minimumFractionDigits: 0,

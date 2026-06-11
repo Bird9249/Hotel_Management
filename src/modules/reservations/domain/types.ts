@@ -31,3 +31,6 @@ export type CancelReservationServiceResult = Awaited<
 >;
 export type CheckInServiceResult = Awaited<ReturnType<typeof checkInService>>;
 export type CheckOutServiceResult = Awaited<ReturnType<typeof checkOutService>>;
+export type ReservationInvoiceResult = {
+  invoice: import("@/modules/billing/domain/types").InvoiceByIdResult | null;
+};

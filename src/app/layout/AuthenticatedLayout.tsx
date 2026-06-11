@@ -18,7 +18,7 @@ import { AppSidebar } from "./AppSidebar";
 import { sidebarData } from "./data/sidebar-data";
 import { NavGroup } from "./NavGroup";
 import { NavUser } from "./NavUser";
-import { TeamSwitcher } from "./TeamSwitcher";
+import { SidebarBrand } from "./SidebarBrand";
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode;
@@ -48,7 +48,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
         <SkipToMain />
         <AppSidebar>
           <SidebarHeader>
-            <TeamSwitcher teams={sidebarData.teams} />
+            <SidebarBrand brand={sidebarData.brand} />
           </SidebarHeader>
           <SidebarContent>
             {sidebarData.navGroups.map((props) => (

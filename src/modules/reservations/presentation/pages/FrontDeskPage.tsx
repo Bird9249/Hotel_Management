@@ -13,11 +13,11 @@ import {
   toast,
 } from "@/components/kit";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
-import { useCreateInvoice } from "@/modules/billing/presentation/api/queries";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
 import type { ReservationDTO } from "../api/client";
 import { useCheckIn, useCheckOut, useReservationsQuery } from "../api/queries";
 import { FrontDeskReservationList } from "../ui/FrontDeskReservationList";
+import { offerDeskBillAction } from "../ui/offerDeskBillAction";
 
 type DeskTab = "arrivals" | "departures";
 
@@ -44,7 +44,6 @@ export function FrontDeskPage() {
   const [tab, setTab] = useState<DeskTab>("arrivals");
   const checkIn = useCheckIn();
   const checkOut = useCheckOut();
-  const createInvoice = useCreateInvoice();
   const canCheckIn = useActionPermission(["reservations:checkin"]);
   const canCheckOut = useActionPermission(["reservations:checkout"]);
   const canInvoice = useActionPermission(["billing:invoice"]);
@@ -70,11 +69,25 @@ export function FrontDeskPage() {
       actionText: "ເຊັກອິນ",
     });
     if (!ok) return;
-    toast.promise(checkIn.run(reservation.id), {
-      loading: "ກໍາລັງເຊັກອິນ...",
-      success: "ເຊັກອິນສໍາເລັດ",
-      error: "ເຊັກອິນລົ້ມເຫຼວ",
-    });
+
+    try {
+      await toast.promise(checkIn.run(reservation.id), {
+        loading: "ກໍາລັງເຊັກອິນ...",
+        success: "ເຊັກອິນສໍາເລັດ",
+        error: "ເຊັກອິນລົ້ມເຫຼວ",
+      });
+
+      await offerDeskBillAction({
+        reservationId: reservation.id,
+        guestName: reservation.guestName,
+        roomNumber: reservation.roomNumber,
+        kind: "check-in",
+        canInvoice: !!canInvoice,
+        navigate: nav,
+      });
+    } catch {
+      // errors handled by toast / fetcher
+    }
   };
 
   const handleCheckOut = async (reservation: ReservationDTO) => {
@@ -92,17 +105,14 @@ export function FrontDeskPage() {
         error: "ເຊັກເອົາລົ້ມເຫຼວ",
       });
 
-      if (canInvoice) {
-        const invoice = await createInvoice.mutateAsync({
-          reservationId: reservation.id,
-          taxRate: 10,
-          extraItems: [],
-        });
-        nav({
-          to: "/app/invoices/$id",
-          params: { id: invoice.id },
-        });
-      }
+      await offerDeskBillAction({
+        reservationId: reservation.id,
+        guestName: reservation.guestName,
+        roomNumber: reservation.roomNumber,
+        kind: "check-out",
+        canInvoice: !!canInvoice,
+        navigate: nav,
+      });
     } catch {
       // errors handled by toast / fetcher
     }

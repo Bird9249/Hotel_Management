@@ -1,4 +1,6 @@
 import { Elysia } from "elysia";
+import { getInvoiceById } from "@/modules/billing/domain/repo/get-invoice-by-id";
+import { getInvoiceByReservationId } from "@/modules/billing/domain/repo/get-invoice-by-reservation";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
 import { serverContext } from "@/server/platform/http/context";
@@ -146,6 +148,20 @@ export const hotelReservationsRoutes = new Elysia()
     },
     {
       beforeHandle: requirePermission(Permissions.reservations.checkin),
+      params: ReservationIdParamSchema,
+    },
+  )
+  .get(
+    "/reservations/:id/invoice",
+    async ({ db, params, status }) => {
+      const row = await getInvoiceByReservationId(params.id, db);
+      if (!row) return { invoice: null };
+      const invoice = await getInvoiceById(row.id, db);
+      if (!invoice) return status(404, { error: "NOT_FOUND" });
+      return { invoice };
+    },
+    {
+      beforeHandle: requirePermission(Permissions.billing.read),
       params: ReservationIdParamSchema,
     },
   )

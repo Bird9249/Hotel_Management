@@ -1,6 +1,14 @@
 import { confirm, toast } from "@/components/kit";
+import { getApiErrorAlert } from "./api-errors";
 
 type ApiErrorShape = { message?: string; error?: string } | null;
+
+function isNetworkError(error: unknown) {
+  return (
+    error instanceof TypeError ||
+    (error instanceof Error && error.message === "Failed to fetch")
+  );
+}
 
 async function parseJsonSafe(res: Response): Promise<ApiErrorShape> {
   try {
@@ -35,10 +43,19 @@ export async function handleError(res: Response): Promise<never> {
     if (ok) window.location.href = "/auth/login";
   } else if (status === 403) {
     console.error(message);
-  } else if (status >= 400 && status < 500) {
-    toast.error("ຜິດພາດການຮ້ອງຂໍ", { description: String(message) });
   } else {
-    toast.error("ຜິດພາດເຊີບເວີ", { description: String(message) });
+    const alert = getApiErrorAlert(message);
+    if (alert) {
+      await confirm({
+        title: alert.title,
+        description: alert.description,
+        actionText: "ເຂົ້າໃຈ",
+      });
+    } else if (status >= 400 && status < 500) {
+      toast.error("ຜິດພາດການຮ້ອງຂໍ", { description: String(message) });
+    } else {
+      toast.error("ຜິດພາດເຊີບເວີ", { description: String(message) });
+    }
   }
   throw new Error(message);
 }
@@ -52,9 +69,11 @@ async function requestJson<TResponse>(
     if (!res.ok) return handleError(res);
     return (await res.json()) as TResponse;
   } catch (e) {
-    toast.error("ເຄືອຂ່າຍມີບັນຫາ", {
-      description: "ກະລຸນາກວດກາໄຟອິນເຕີເນັດຂອງທ່ານ.",
-    });
+    if (isNetworkError(e)) {
+      toast.error("ເຄືອຂ່າຍມີບັນຫາ", {
+        description: "ກະລຸນາກວດກາໄຟອິນເຕີເນັດຂອງທ່ານ.",
+      });
+    }
     throw e;
   }
 }

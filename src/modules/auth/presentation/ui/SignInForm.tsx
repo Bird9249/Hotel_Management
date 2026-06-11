@@ -1,5 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
-import z from "zod";
 import {
   Button,
   FormCheckbox,
@@ -8,9 +6,13 @@ import {
   FormRoot,
   Loader,
   RHF,
+  Separator,
   toast,
   zodResolver,
 } from "@/components/kit";
+import { useNavigate } from "@tanstack/react-router";
+import { LogIn } from "lucide-react";
+import z from "zod";
 import { authClient } from "../api/client";
 import { useAuthState } from "../model/useAuthState";
 
@@ -27,9 +29,11 @@ export default function SignInForm() {
   const { isLoading } = useAuthState();
 
   const form = RHF.useForm({
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", rememberMe: false },
     resolver: zodResolver(SignInFormSchema),
   });
+
+  const isSubmitting = form.formState.isSubmitting;
 
   const handleSubmit = async (value: ISignInFormSchema) => {
     await authClient.signIn.email(
@@ -47,29 +51,59 @@ export default function SignInForm() {
   };
 
   if (isLoading) {
-    return <Loader />;
+    return (
+      <div className="flex min-h-48 items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   return (
-    <FormRoot<ISignInFormSchema> methods={form} onSubmit={handleSubmit}>
-      <FormInput
-        name="email"
-        label="ອີເມວ"
-        requiredMark
-        placeholder="name@example.com"
-      />
-      <FormPassword
-        name="password"
-        label="ລະຫັດຜ່ານ"
-        requiredMark
-        placeholder="********"
-      />
+    <FormRoot<ISignInFormSchema>
+      methods={form}
+      onSubmit={handleSubmit}
+      className="gap-5"
+    >
+      <div className="flex flex-col gap-4">
+        <FormInput
+          name="email"
+          label="ອີເມວ"
+          requiredMark
+          type="email"
+          autoComplete="email"
+          placeholder="name@example.com"
+        />
+        <FormPassword
+          name="password"
+          label="ລະຫັດຜ່ານ"
+          requiredMark
+          placeholder="••••••••"
+        />
+      </div>
 
-      <FormCheckbox name="rememberMe" label="ຈໍາຂ້ອຍໄວ້" />
+      <div className="flex items-center justify-between gap-3">
+        <FormCheckbox name="rememberMe" label="ຈໍາຂ້ອຍໄວ້" />
+      </div>
 
-      <Button type="submit" isLoading={isLoading} className="w-full">
-        ເຂົ້າລະບົບ
-      </Button>
+      <div className="flex flex-col gap-4">
+        <Button
+          type="submit"
+          className="w-full"
+          size="lg"
+          isLoading={isSubmitting}
+        >
+          {!isSubmitting ? <LogIn data-icon="inline-start" /> : null}
+          ເຂົ້າລະບົບ
+        </Button>
+
+        <div className="flex items-center gap-3">
+          <Separator className="flex-1" />
+          <span className="text-muted-foreground text-xs">
+            ສຳລັບພະນັກງານໂຮງແຮມ
+          </span>
+          <Separator className="flex-1" />
+        </div>
+      </div>
     </FormRoot>
   );
 }

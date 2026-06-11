@@ -57,11 +57,6 @@ export function useCreateReservation() {
       qc.invalidateQueries({ queryKey: reservationsKeys.all });
       toast.success("ສ້າງການຈອງສໍາເລັດ");
     },
-    onError: (e: Error) => {
-      if (e.message.includes("ROOM_NOT_AVAILABLE")) {
-        toast.error("ຫ້ອງບໍ່ວ່າງໃນຊ່ວງເວລານີ້");
-      }
-    },
   });
 }
 
@@ -74,11 +69,6 @@ export function useUpdateReservation(id: string) {
       qc.invalidateQueries({ queryKey: reservationsKeys.detail(id) });
       qc.invalidateQueries({ queryKey: reservationsKeys.all });
       toast.success("ແກ້ໄຂການຈອງສໍາເລັດ");
-    },
-    onError: (e: Error) => {
-      if (e.message.includes("ROOM_NOT_AVAILABLE")) {
-        toast.error("ຫ້ອງບໍ່ວ່າງໃນຊ່ວງເວລານີ້");
-      }
     },
   });
 }
