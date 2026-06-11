@@ -1,9 +1,11 @@
 import {
   AudioWaveform,
   BedDouble,
+  BrushCleaning,
   CalendarCheck,
   CalendarDays,
   Command,
+  ConciergeBell,
   GalleryVerticalEnd,
   LayoutDashboard,
   ShieldCheck,
@@ -59,6 +61,12 @@ export const sidebarData: SidebarData = {
           requiredPermissions: ["rooms:read"],
         },
         {
+          title: "ໜ້າຮັບແຂກ",
+          url: "/app/front-desk",
+          icon: ConciergeBell,
+          requiredPermissions: ["reservations:read"],
+        },
+        {
           title: "ການຈອງ",
           url: "/app/reservations",
           icon: CalendarCheck,
@@ -75,6 +83,12 @@ export const sidebarData: SidebarData = {
           url: "/app/guests",
           icon: UserRound,
           requiredPermissions: ["guests:read"],
+        },
+        {
+          title: "ທຳຄວາມສະອາດ",
+          url: "/app/housekeeping",
+          icon: BrushCleaning,
+          requiredPermissions: ["rooms:status"],
         },
       ],
     },

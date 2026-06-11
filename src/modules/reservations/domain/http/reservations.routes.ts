@@ -12,6 +12,8 @@ import {
 import { getReservationById } from "../repo/get-reservation-by-id";
 import { listReservations } from "../repo/list-reservations";
 import { cancelReservationService } from "../service/cancel-reservation";
+import { checkInService } from "../service/check-in";
+import { checkOutService } from "../service/check-out";
 import { createReservationService } from "../service/create-reservation";
 import { getAvailabilityService } from "../service/get-availability";
 import { updateReservationService } from "../service/update-reservation";
@@ -122,6 +124,50 @@ export const hotelReservationsRoutes = new Elysia()
     },
     {
       beforeHandle: requirePermission(Permissions.reservations.cancel),
+      params: ReservationIdParamSchema,
+    },
+  )
+  .post(
+    "/reservations/:id/check-in",
+    async ({ db, params, status }) => {
+      try {
+        const { updated } = await checkInService(db, {
+          reservationId: params.id,
+        });
+        return updated;
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        if (message === "RESERVATION_NOT_FOUND")
+          return status(404, { error: "NOT_FOUND" });
+        if (message === "INVALID_STATE")
+          return status(409, { error: "INVALID_STATE" });
+        return status(500, { error: message });
+      }
+    },
+    {
+      beforeHandle: requirePermission(Permissions.reservations.checkin),
+      params: ReservationIdParamSchema,
+    },
+  )
+  .post(
+    "/reservations/:id/check-out",
+    async ({ db, params, status }) => {
+      try {
+        const { updated } = await checkOutService(db, {
+          reservationId: params.id,
+        });
+        return updated;
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        if (message === "RESERVATION_NOT_FOUND")
+          return status(404, { error: "NOT_FOUND" });
+        if (message === "INVALID_STATE")
+          return status(409, { error: "INVALID_STATE" });
+        return status(500, { error: message });
+      }
+    },
+    {
+      beforeHandle: requirePermission(Permissions.reservations.checkout),
       params: ReservationIdParamSchema,
     },
   );

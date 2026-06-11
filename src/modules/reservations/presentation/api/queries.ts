@@ -5,6 +5,7 @@ import type {
   ReservationCreateInput,
   ReservationUpdateInput,
 } from "@/modules/reservations/domain/contracts";
+import { roomsKeys } from "@/modules/rooms/presentation/api/queries";
 import type { OffsetPageQueryDTO } from "@/shared/contracts/base";
 import { reservationsApi } from "./client";
 
@@ -90,6 +91,47 @@ export function useCancelReservation() {
       qc.invalidateQueries({ queryKey: reservationsKeys.all });
       toast.success("ຍົກເລີກການຈອງສໍາເລັດ");
     },
+  });
+
+  const run = (id: string) =>
+    new Promise<void>((resolve, reject) => {
+      base.mutate(id, {
+        onSuccess: () => resolve(),
+        onError: (e) => reject(e),
+      });
+    });
+
+  return { ...base, run };
+}
+
+function invalidateFrontDeskQueries(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: reservationsKeys.all });
+  qc.invalidateQueries({ queryKey: roomsKeys.all });
+}
+
+export function useCheckIn() {
+  const qc = useQueryClient();
+  const base = useMutation({
+    mutationFn: (id: string) => reservationsApi.checkIn(id),
+    onSuccess: () => invalidateFrontDeskQueries(qc),
+  });
+
+  const run = (id: string) =>
+    new Promise<void>((resolve, reject) => {
+      base.mutate(id, {
+        onSuccess: () => resolve(),
+        onError: (e) => reject(e),
+      });
+    });
+
+  return { ...base, run };
+}
+
+export function useCheckOut() {
+  const qc = useQueryClient();
+  const base = useMutation({
+    mutationFn: (id: string) => reservationsApi.checkOut(id),
+    onSuccess: () => invalidateFrontDeskQueries(qc),
   });
 
   const run = (id: string) =>

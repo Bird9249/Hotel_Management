@@ -29,6 +29,7 @@ export const routeMeta: Record<string, RouteMeta> = {
   "/app/guests": { label: "ລູກຄ້າ" },
   "/app/guests/create": { label: "ເພີ່ມລູກຄ້າ", parent: "/app/guests" },
   "/app/guests/$id/edit": { label: "ແກ້ໄຂລູກຄ້າ", parent: "/app/guests" },
+  "/app/front-desk": { label: "ໜ້າຮັບແຂກ" },
   "/app/reservations": { label: "ການຈອງ" },
   "/app/reservations/create": {
     label: "ສ້າງການຈອງ",
@@ -39,6 +40,7 @@ export const routeMeta: Record<string, RouteMeta> = {
     parent: "/app/reservations",
   },
   "/app/calendar": { label: "ປະຕິທິນການຈອງ", parent: "/app/reservations" },
+  "/app/housekeeping": { label: "ຄິວທຳຄວາມສະອາດ" },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },
 };

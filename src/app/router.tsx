@@ -167,6 +167,20 @@ const BookingCalendarPage = lazy(() =>
     }),
   ),
 );
+const FrontDeskPage = lazy(() =>
+  import("@/modules/reservations/presentation/pages/FrontDeskPage").then(
+    (module) => ({
+      default: module.FrontDeskPage,
+    }),
+  ),
+);
+const HousekeepingPage = lazy(() =>
+  import("@/modules/rooms/presentation/pages/HousekeepingPage").then(
+    (module) => ({
+      default: module.HousekeepingPage,
+    }),
+  ),
+);
 const Forbidden = lazy(() =>
   import("./error/Forbidden").then((module) => ({
     default: module.Forbidden,
@@ -460,6 +474,33 @@ const calendarRoute = createRoute({
   ),
 });
 
+const frontDeskRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/front-desk",
+  component: () => (
+    <RequirePermissions
+      all={["reservations:read"]}
+      any={["reservations:checkin", "reservations:checkout"]}
+    >
+      <LazyPage>
+        <FrontDeskPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const housekeepingRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/housekeeping",
+  component: () => (
+    <RequirePermissions all={["rooms:read", "rooms:status"]}>
+      <LazyPage>
+        <HousekeepingPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors/forbidden",
@@ -495,6 +536,8 @@ export const routeTree = rootRoute.addChildren([
     reservationCreateRoute,
     reservationEditRoute,
     calendarRoute,
+    frontDeskRoute,
+    housekeepingRoute,
   ]),
   forbiddenRoute,
 ]);

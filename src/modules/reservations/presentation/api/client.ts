@@ -6,6 +6,8 @@ import type {
 import type {
   AvailabilityResult,
   CancelReservationServiceResult,
+  CheckInServiceResult,
+  CheckOutServiceResult,
   CreateReservationServiceResult,
   ReservationByIdResult,
   ReservationsListResult,
@@ -55,6 +57,18 @@ export const reservationsApi = {
   async cancel(id: string) {
     return fetcher.post<CancelReservationServiceResult["updated"]>(
       `${hotelBase}/reservations/${id}/cancel`,
+      {},
+    );
+  },
+  async checkIn(id: string) {
+    return fetcher.post<CheckInServiceResult["updated"]>(
+      `${hotelBase}/reservations/${id}/check-in`,
+      {},
+    );
+  },
+  async checkOut(id: string) {
+    return fetcher.post<CheckOutServiceResult["updated"]>(
+      `${hotelBase}/reservations/${id}/check-out`,
       {},
     );
   },
