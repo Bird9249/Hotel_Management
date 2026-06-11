@@ -24,14 +24,14 @@ import { resolveImageSrc } from "@/shared/ui/AppImage";
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, signOut } = useAuthState();
-  const { isOpen, open, toggle } = useDisclosure();
+  const { isOpen, open, close } = useDisclosure();
   const navigate = useNavigate({ from: "/app" });
 
   return (
     <>
       <SidebarMenu>
         <SidebarMenuItem>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
@@ -108,8 +108,8 @@ export function NavUser() {
 
       <ConfirmModal
         open={!!isOpen}
-        onOpenChange={() => {
-          toggle();
+        onOpenChange={(next) => {
+          if (!next) close();
         }}
         title="ອອກຈາກລະບົບ"
         description="ທ່ານແນ່ໃຈບໍ່ວ່າຈະອອກຈາກລະບົບ? ຈະຕ້ອງເຂົ້າລະບົບໃໝ່ເພື່ອເຂົ້າໃຊ້ບັນຊີ."

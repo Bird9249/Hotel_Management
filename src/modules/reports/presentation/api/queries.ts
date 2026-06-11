@@ -8,19 +8,19 @@ export const reportsKeys = {
   summary: () => ["reports", "summary"] as const,
 };
 
-export function useDailySalesQuery(query: DateRangeParams) {
+export function useDailySalesQuery(query: DateRangeParams, enabled = true) {
   return useQuery({
     queryKey: reportsKeys.dailySales(query),
     queryFn: () => reportsApi.dailySales(query),
-    enabled: Boolean(query.from && query.to),
+    enabled: enabled && Boolean(query.from && query.to),
   });
 }
 
-export function useOccupancyQuery(query: DateRangeParams) {
+export function useOccupancyQuery(query: DateRangeParams, enabled = true) {
   return useQuery({
     queryKey: reportsKeys.occupancy(query),
     queryFn: () => reportsApi.occupancy(query),
-    enabled: Boolean(query.from && query.to),
+    enabled: enabled && Boolean(query.from && query.to),
   });
 }
 

@@ -2,14 +2,15 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DialogScrollBody } from "@/shared/ui/DialogScrollBody";
 import { cn } from "@/lib/utils";
+import { DialogScrollBody } from "@/shared/ui/DialogScrollBody";
 
 const sizeClasses = {
   sm: "sm:max-w-sm",
@@ -63,9 +64,7 @@ export function Modal({
         ) : null}
         {children ? <DialogScrollBody>{children}</DialogScrollBody> : null}
         {footer ? (
-          <DialogFooter className="border-t px-6 py-4">
-            {footer}
-          </DialogFooter>
+          <DialogFooter className="border-t px-6 py-4">{footer}</DialogFooter>
         ) : null}
       </DialogContent>
     </Dialog>
@@ -112,13 +111,11 @@ export function ConfirmModal({
       size="sm"
       footer={
         <>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={submitting}
-          >
-            {cancelLabel}
-          </Button>
+          <DialogClose asChild>
+            <Button variant="outline" disabled={submitting}>
+              {cancelLabel}
+            </Button>
+          </DialogClose>
           <Button
             variant={confirmVariant}
             onClick={handleConfirm}

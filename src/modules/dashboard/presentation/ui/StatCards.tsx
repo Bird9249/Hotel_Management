@@ -10,32 +10,13 @@ import {
 import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
 import { formatMoney } from "@/modules/billing/presentation/ui/invoice-status";
 import { useReportSummaryQuery } from "@/modules/reports/presentation/api/queries";
-import { stats } from "../data/mock";
 
 export function StatCards() {
   const { has } = usePermissions();
   const canReadReports = has("reports:read");
   const summary = useReportSummaryQuery(canReadReports);
 
-  if (!canReadReports) {
-    return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.key}>
-            <CardHeader>
-              <CardDescription>{stat.label}</CardDescription>
-              <CardTitle className="font-semibold text-2xl tabular-nums">
-                {stat.value}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">{stat.hint}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  if (!canReadReports) return null;
 
   if (summary.isLoading) {
     return (

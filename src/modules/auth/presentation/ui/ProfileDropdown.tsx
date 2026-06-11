@@ -19,7 +19,7 @@ import { resolveImageSrc } from "@/shared/ui/AppImage";
 import { useAuthState } from "../model/useAuthState";
 
 export function ProfileDropdown() {
-  const { isOpen, open, toggle } = useDisclosure();
+  const { isOpen, open, close } = useDisclosure();
   const { user, signOut } = useAuthState();
   const navigate = useNavigate({ from: "/app" });
 
@@ -69,7 +69,9 @@ export function ProfileDropdown() {
 
       <ConfirmModal
         open={!!isOpen}
-        onOpenChange={toggle}
+        onOpenChange={(next) => {
+          if (!next) close();
+        }}
         onConfirm={async () => {
           await signOut();
           navigate({ to: "/auth/login" });
