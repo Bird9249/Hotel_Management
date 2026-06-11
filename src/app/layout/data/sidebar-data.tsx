@@ -8,6 +8,7 @@ import {
   ConciergeBell,
   GalleryVerticalEnd,
   LayoutDashboard,
+  ReceiptText,
   ShieldCheck,
   Tags,
   UserCog,
@@ -83,6 +84,12 @@ export const sidebarData: SidebarData = {
           url: "/app/guests",
           icon: UserRound,
           requiredPermissions: ["guests:read"],
+        },
+        {
+          title: "ໃບບິນ",
+          url: "/app/invoices",
+          icon: ReceiptText,
+          requiredPermissions: ["billing:read"],
         },
         {
           title: "ທຳຄວາມສະອາດ",

@@ -41,6 +41,11 @@ export const routeMeta: Record<string, RouteMeta> = {
   },
   "/app/calendar": { label: "ປະຕິທິນການຈອງ", parent: "/app/reservations" },
   "/app/housekeeping": { label: "ຄິວທຳຄວາມສະອາດ" },
+  "/app/invoices": { label: "ໃບບິນ" },
+  "/app/invoices/$id": {
+    label: "ລາຍລະອຽດໃບບິນ",
+    parent: "/app/invoices",
+  },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },
 };

@@ -94,6 +94,9 @@ Full-stack web application template built with modern technologies. Features a c
 
    # Demo data for rooms, guests & reservations (Phase 1 + 2)
    bun run seed:hotel
+
+   # Demo invoices & payments (Phase 4, requires seed:hotel first)
+   bun run seed:billing
    ```
 
 5. **Start development server**

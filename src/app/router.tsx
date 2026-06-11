@@ -181,6 +181,20 @@ const HousekeepingPage = lazy(() =>
     }),
   ),
 );
+const InvoicesPage = lazy(() =>
+  import("@/modules/billing/presentation/pages/InvoicesPage").then(
+    (module) => ({
+      default: module.InvoicesPage,
+    }),
+  ),
+);
+const InvoiceDetailPage = lazy(() =>
+  import("@/modules/billing/presentation/pages/InvoiceDetailPage").then(
+    (module) => ({
+      default: module.InvoiceDetailPage,
+    }),
+  ),
+);
 const Forbidden = lazy(() =>
   import("./error/Forbidden").then((module) => ({
     default: module.Forbidden,
@@ -501,6 +515,30 @@ const housekeepingRoute = createRoute({
   ),
 });
 
+const invoicesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/invoices",
+  component: () => (
+    <RequirePermissions all={["billing:read"]}>
+      <LazyPage>
+        <InvoicesPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const invoiceDetailRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/invoices/$id",
+  component: () => (
+    <RequirePermissions all={["billing:read"]}>
+      <LazyPage>
+        <InvoiceDetailPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors/forbidden",
@@ -538,6 +576,8 @@ export const routeTree = rootRoute.addChildren([
     calendarRoute,
     frontDeskRoute,
     housekeepingRoute,
+    invoicesRoute,
+    invoiceDetailRoute,
   ]),
   forbiddenRoute,
 ]);

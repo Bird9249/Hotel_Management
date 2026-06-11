@@ -3,6 +3,7 @@
 import { addDays, format } from "date-fns";
 import { like } from "drizzle-orm";
 import { db } from "@/server/platform/db/client";
+import { invoice } from "@/server/platform/db/schema/billing";
 import { guest } from "@/server/platform/db/schema/hotel-guests";
 import { reservation } from "@/server/platform/db/schema/reservations";
 import { room, roomType } from "@/server/platform/db/schema/rooms";
@@ -184,6 +185,24 @@ function buildDemoReservations(today: Date) {
       guestsCount: 2,
       status: "cancelled",
     },
+    {
+      id: `${DEMO_PREFIX}res-done`,
+      guestId: `${DEMO_PREFIX}guest-john`,
+      roomId: `${DEMO_PREFIX}room-103`,
+      checkInDate: isoDate(addDays(today, -3)),
+      checkOutDate: isoDate(addDays(today, -1)),
+      guestsCount: 2,
+      status: "checked_out",
+    },
+    {
+      id: `${DEMO_PREFIX}res-done-2`,
+      guestId: `${DEMO_PREFIX}guest-anna`,
+      roomId: `${DEMO_PREFIX}room-202`,
+      checkInDate: isoDate(addDays(today, -5)),
+      checkOutDate: isoDate(addDays(today, -2)),
+      guestsCount: 4,
+      status: "checked_out",
+    },
   ] as const;
 }
 
@@ -196,6 +215,9 @@ async function seedHotelDemo() {
 
     await db.transaction(async (tx) => {
       logger.info("Clearing previous demo data...");
+      await tx
+        .delete(invoice)
+        .where(like(invoice.reservationId, `${DEMO_PREFIX}%`));
       await tx
         .delete(reservation)
         .where(like(reservation.id, `${DEMO_PREFIX}%`));

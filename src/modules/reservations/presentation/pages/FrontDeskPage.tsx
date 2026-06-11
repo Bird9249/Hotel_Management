@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ConciergeBell, LogIn, LogOut } from "lucide-react";
 import { useState } from "react";
@@ -12,6 +13,7 @@ import {
   toast,
 } from "@/components/kit";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
+import { useCreateInvoice } from "@/modules/billing/presentation/api/queries";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
 import type { ReservationDTO } from "../api/client";
 import { useCheckIn, useCheckOut, useReservationsQuery } from "../api/queries";
@@ -37,12 +39,15 @@ function buildTodayFilters(tab: DeskTab, today: string): FilterConditionDTO[] {
 }
 
 export function FrontDeskPage() {
+  const nav = useNavigate();
   const today = todayIso();
   const [tab, setTab] = useState<DeskTab>("arrivals");
   const checkIn = useCheckIn();
   const checkOut = useCheckOut();
+  const createInvoice = useCreateInvoice();
   const canCheckIn = useActionPermission(["reservations:checkin"]);
   const canCheckOut = useActionPermission(["reservations:checkout"]);
+  const canInvoice = useActionPermission(["billing:invoice"]);
 
   const arrivals = useReservationsQuery({
     limit: 100,
@@ -79,11 +84,28 @@ export function FrontDeskPage() {
       actionText: "ເຊັກເອົາ",
     });
     if (!ok) return;
-    toast.promise(checkOut.run(reservation.id), {
-      loading: "ກໍາລັງເຊັກເອົາ...",
-      success: "ເຊັກເອົາສໍາເລັດ",
-      error: "ເຊັກເອົາລົ້ມເຫຼວ",
-    });
+
+    try {
+      await toast.promise(checkOut.run(reservation.id), {
+        loading: "ກໍາລັງເຊັກເອົາ...",
+        success: "ເຊັກເອົາສໍາເລັດ",
+        error: "ເຊັກເອົາລົ້ມເຫຼວ",
+      });
+
+      if (canInvoice) {
+        const invoice = await createInvoice.mutateAsync({
+          reservationId: reservation.id,
+          taxRate: 10,
+          extraItems: [],
+        });
+        nav({
+          to: "/app/invoices/$id",
+          params: { id: invoice.id },
+        });
+      }
+    } catch {
+      // errors handled by toast / fetcher
+    }
   };
 
   const arrivalCount = arrivals.data?.meta?.total ?? 0;
