@@ -91,6 +91,9 @@ Full-stack web application template built with modern technologies. Features a c
 
    # Sync RBAC permissions
    bun run rbac:sync
+
+   # Demo data for rooms, guests & reservations (Phase 1 + 2)
+   bun run seed:hotel
    ```
 
 5. **Start development server**

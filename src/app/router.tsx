@@ -116,9 +116,54 @@ const RoomEditPage = lazy(() =>
   })),
 );
 const RoomTypesPage = lazy(() =>
-  import("@/modules/rooms/presentation/pages/RoomTypesPage").then(
+  import("@/modules/rooms/presentation/pages/RoomTypesPage").then((module) => ({
+    default: module.RoomTypesPage,
+  })),
+);
+const GuestsPage = lazy(() =>
+  import("@/modules/guests/presentation/pages/GuestsPage").then((module) => ({
+    default: module.GuestsPage,
+  })),
+);
+const GuestCreatePage = lazy(() =>
+  import("@/modules/guests/presentation/pages/GuestCreatePage").then(
     (module) => ({
-      default: module.RoomTypesPage,
+      default: module.GuestCreatePage,
+    }),
+  ),
+);
+const GuestEditPage = lazy(() =>
+  import("@/modules/guests/presentation/pages/GuestEditPage").then(
+    (module) => ({
+      default: module.GuestEditPage,
+    }),
+  ),
+);
+const ReservationsPage = lazy(() =>
+  import("@/modules/reservations/presentation/pages/ReservationsPage").then(
+    (module) => ({
+      default: module.ReservationsPage,
+    }),
+  ),
+);
+const ReservationCreatePage = lazy(() =>
+  import(
+    "@/modules/reservations/presentation/pages/ReservationCreatePage"
+  ).then((module) => ({
+    default: module.ReservationCreatePage,
+  })),
+);
+const ReservationEditPage = lazy(() =>
+  import("@/modules/reservations/presentation/pages/ReservationEditPage").then(
+    (module) => ({
+      default: module.ReservationEditPage,
+    }),
+  ),
+);
+const BookingCalendarPage = lazy(() =>
+  import("@/modules/reservations/presentation/pages/BookingCalendarPage").then(
+    (module) => ({
+      default: module.BookingCalendarPage,
     }),
   ),
 );
@@ -325,6 +370,96 @@ const roomTypesRoute = createRoute({
   ),
 });
 
+const guestsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/guests",
+  component: () => (
+    <RequirePermissions all={["guests:read"]}>
+      <LazyPage>
+        <GuestsPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const guestCreateRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/guests/create",
+  component: () => (
+    <RequirePermissions all={["guests:read"]} any={["guests:create"]}>
+      <LazyPage>
+        <GuestCreatePage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const guestEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/guests/$id/edit",
+  component: () => (
+    <RequirePermissions all={["guests:read"]} any={["guests:update"]}>
+      <LazyPage>
+        <GuestEditPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const reservationsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/reservations",
+  component: () => (
+    <RequirePermissions all={["reservations:read"]}>
+      <LazyPage>
+        <ReservationsPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const reservationCreateRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/reservations/create",
+  component: () => (
+    <RequirePermissions
+      all={["reservations:read"]}
+      any={["reservations:create"]}
+    >
+      <LazyPage>
+        <ReservationCreatePage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const reservationEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/reservations/$id/edit",
+  component: () => (
+    <RequirePermissions
+      all={["reservations:read"]}
+      any={["reservations:update"]}
+    >
+      <LazyPage>
+        <ReservationEditPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const calendarRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/calendar",
+  component: () => (
+    <RequirePermissions all={["reservations:read"]}>
+      <LazyPage>
+        <BookingCalendarPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors/forbidden",
@@ -353,6 +488,13 @@ export const routeTree = rootRoute.addChildren([
     roomCreateRoute,
     roomEditRoute,
     roomTypesRoute,
+    guestsRoute,
+    guestCreateRoute,
+    guestEditRoute,
+    reservationsRoute,
+    reservationCreateRoute,
+    reservationEditRoute,
+    calendarRoute,
   ]),
   forbiddenRoute,
 ]);

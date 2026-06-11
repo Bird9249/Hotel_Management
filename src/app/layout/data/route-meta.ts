@@ -26,6 +26,19 @@ export const routeMeta: Record<string, RouteMeta> = {
   "/app/rooms/create": { label: "ເພີ່ມຫ້ອງ", parent: "/app/rooms" },
   "/app/rooms/$id/edit": { label: "ແກ້ໄຂຫ້ອງ", parent: "/app/rooms" },
   "/app/room-types": { label: "ປະເພດຫ້ອງ" },
+  "/app/guests": { label: "ລູກຄ້າ" },
+  "/app/guests/create": { label: "ເພີ່ມລູກຄ້າ", parent: "/app/guests" },
+  "/app/guests/$id/edit": { label: "ແກ້ໄຂລູກຄ້າ", parent: "/app/guests" },
+  "/app/reservations": { label: "ການຈອງ" },
+  "/app/reservations/create": {
+    label: "ສ້າງການຈອງ",
+    parent: "/app/reservations",
+  },
+  "/app/reservations/$id/edit": {
+    label: "ແກ້ໄຂການຈອງ",
+    parent: "/app/reservations",
+  },
+  "/app/calendar": { label: "ປະຕິທິນການຈອງ", parent: "/app/reservations" },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },
 };

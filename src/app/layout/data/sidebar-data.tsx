@@ -1,12 +1,15 @@
 import {
   AudioWaveform,
   BedDouble,
+  CalendarCheck,
+  CalendarDays,
   Command,
   GalleryVerticalEnd,
   LayoutDashboard,
   ShieldCheck,
   Tags,
   UserCog,
+  UserRound,
   Users,
 } from "lucide-react";
 import type { SidebarData } from "../types";
@@ -54,6 +57,24 @@ export const sidebarData: SidebarData = {
           url: "/app/room-types",
           icon: Tags,
           requiredPermissions: ["rooms:read"],
+        },
+        {
+          title: "ການຈອງ",
+          url: "/app/reservations",
+          icon: CalendarCheck,
+          requiredPermissions: ["reservations:read"],
+        },
+        {
+          title: "ປະຕິທິນ",
+          url: "/app/calendar",
+          icon: CalendarDays,
+          requiredPermissions: ["reservations:read"],
+        },
+        {
+          title: "ລູກຄ້າ",
+          url: "/app/guests",
+          icon: UserRound,
+          requiredPermissions: ["guests:read"],
         },
       ],
     },

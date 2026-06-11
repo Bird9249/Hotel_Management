@@ -11,9 +11,9 @@ import {
   DialogTitle,
   toast,
 } from "@/components/kit";
-import { DialogScrollBody } from "@/shared/ui/DialogScrollBody";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
 import type { OffsetPageQueryDTO } from "@/shared/contracts/base";
+import { DialogScrollBody } from "@/shared/ui/DialogScrollBody";
 import type { RoomTypeDTO } from "../api/client";
 import {
   useCreateRoomType,
@@ -22,6 +22,7 @@ import {
   useUpdateRoomType,
 } from "../api/queries";
 import { RoomTypeForm } from "../ui/RoomTypeForm";
+import { RoomTypesFilter } from "../ui/RoomTypesFilter";
 import { RoomTypesTable } from "../ui/RoomTypesTable";
 
 export function RoomTypesPage() {
@@ -75,7 +76,8 @@ export function RoomTypesPage() {
           )}
         </div>
 
-        <div className="flex flex-col rounded-xl border bg-card pt-2">
+        <div className="flex flex-col rounded-xl border bg-card">
+          <RoomTypesFilter />
           <RoomTypesTable
             canManage={!!canManage}
             isLoading={list.isLoading}
