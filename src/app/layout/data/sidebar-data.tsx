@@ -1,9 +1,11 @@
 import {
   AudioWaveform,
+  BedDouble,
   Command,
   GalleryVerticalEnd,
   LayoutDashboard,
   ShieldCheck,
+  Tags,
   UserCog,
   Users,
 } from "lucide-react";
@@ -35,6 +37,23 @@ export const sidebarData: SidebarData = {
           title: "ແຜງຄວບຄຸມ",
           url: "/app/dashboard",
           icon: LayoutDashboard,
+        },
+      ],
+    },
+    {
+      title: "ໂຮງແຮມ",
+      items: [
+        {
+          title: "ຫ້ອງພັກ",
+          url: "/app/rooms",
+          icon: BedDouble,
+          requiredPermissions: ["rooms:read"],
+        },
+        {
+          title: "ປະເພດຫ້ອງ",
+          url: "/app/room-types",
+          icon: Tags,
+          requiredPermissions: ["rooms:read"],
         },
       ],
     },

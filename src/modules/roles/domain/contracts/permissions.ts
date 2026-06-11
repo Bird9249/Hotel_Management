@@ -9,6 +9,35 @@ export const Permissions = {
   audit: {
     read: "audit:read",
   },
+  rooms: {
+    read: "rooms:read",
+    create: "rooms:create",
+    update: "rooms:update",
+    delete: "rooms:delete",
+    status: "rooms:status",
+  },
+  guests: {
+    read: "guests:read",
+    create: "guests:create",
+    update: "guests:update",
+    delete: "guests:delete",
+  },
+  reservations: {
+    read: "reservations:read",
+    create: "reservations:create",
+    update: "reservations:update",
+    cancel: "reservations:cancel",
+    checkin: "reservations:checkin",
+    checkout: "reservations:checkout",
+  },
+  billing: {
+    read: "billing:read",
+    invoice: "billing:invoice",
+    payment: "billing:payment",
+  },
+  reports: {
+    read: "reports:read",
+  },
 } as const;
 
 export const ALL_PERMISSIONS = Object.entries(Permissions).flatMap(
@@ -22,6 +51,11 @@ export type PermissionId = (typeof ALL_PERMISSIONS)[number]["id"];
 export const RESOURCE_LABELS: Record<string, string> = {
   users: "ຜູ້ໃຊ້",
   audit: "ບັນທຶກການກວດກາ",
+  rooms: "ຫ້ອງພັກ",
+  guests: "ລູກຄ້າ",
+  reservations: "ການຈອງ",
+  billing: "ການເງິນ",
+  reports: "ລາຍງານ",
 };
 
 export const ACTION_LABELS: Record<string, string> = {
@@ -30,6 +64,12 @@ export const ACTION_LABELS: Record<string, string> = {
   update: "ແກ້ໄຂ",
   delete: "ລຶບ",
   ban: "ລະງັບ",
+  status: "ສະຖານະ",
+  cancel: "ຍົກເລີກ",
+  checkin: "ເຊັກອິນ",
+  checkout: "ເຊັກເອົາ",
+  invoice: "ໃບບິນ",
+  payment: "ຊຳລະເງິນ",
   all: "ທັງໝົດ",
 };
 

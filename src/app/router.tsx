@@ -98,6 +98,30 @@ const SettingsPage = lazy(() =>
     }),
   ),
 );
+const RoomsPage = lazy(() =>
+  import("@/modules/rooms/presentation/pages/RoomsPage").then((module) => ({
+    default: module.RoomsPage,
+  })),
+);
+const RoomCreatePage = lazy(() =>
+  import("@/modules/rooms/presentation/pages/RoomCreatePage").then(
+    (module) => ({
+      default: module.RoomCreatePage,
+    }),
+  ),
+);
+const RoomEditPage = lazy(() =>
+  import("@/modules/rooms/presentation/pages/RoomEditPage").then((module) => ({
+    default: module.RoomEditPage,
+  })),
+);
+const RoomTypesPage = lazy(() =>
+  import("@/modules/rooms/presentation/pages/RoomTypesPage").then(
+    (module) => ({
+      default: module.RoomTypesPage,
+    }),
+  ),
+);
 const Forbidden = lazy(() =>
   import("./error/Forbidden").then((module) => ({
     default: module.Forbidden,
@@ -253,6 +277,54 @@ const settingsRoute = createRoute({
   ),
 });
 
+const roomsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/rooms",
+  component: () => (
+    <RequirePermissions all={["rooms:read"]}>
+      <LazyPage>
+        <RoomsPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const roomCreateRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/rooms/create",
+  component: () => (
+    <RequirePermissions all={["rooms:read"]} any={["rooms:create"]}>
+      <LazyPage>
+        <RoomCreatePage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const roomEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/rooms/$id/edit",
+  component: () => (
+    <RequirePermissions all={["rooms:read"]} any={["rooms:update"]}>
+      <LazyPage>
+        <RoomEditPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const roomTypesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/room-types",
+  component: () => (
+    <RequirePermissions all={["rooms:read"]}>
+      <LazyPage>
+        <RoomTypesPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors/forbidden",
@@ -277,6 +349,10 @@ export const routeTree = rootRoute.addChildren([
     auditDetailRoute,
     profileRoute,
     settingsRoute,
+    roomsRoute,
+    roomCreateRoute,
+    roomEditRoute,
+    roomTypesRoute,
   ]),
   forbiddenRoute,
 ]);

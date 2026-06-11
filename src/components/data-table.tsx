@@ -333,7 +333,7 @@ export function DataTable<TData, TValue>({
   const rows = table.getCoreRowModel().rows;
 
   return (
-    <div className={cn("flex flex-col gap-4 py-2", className)}>
+    <div className={cn("flex flex-col gap-2 py-2", className)}>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -434,7 +434,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       {enablePagination ? (
-        <div className="flex flex-col-reverse items-center gap-3 px-1 sm:flex-row sm:justify-between">
+        <div className="flex flex-col-reverse items-center gap-3 px-2 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-4">
             <p className="whitespace-nowrap text-muted-foreground text-sm">
               {totalCount > 0

@@ -22,6 +22,10 @@ export const routeMeta: Record<string, RouteMeta> = {
   "/app/users/$id/edit": { label: "ແກ້ໄຂຜູ້ໃຊ້", parent: "/app/users" },
   "/app/audit": { label: "ບັນທຶກການກວດກາ" },
   "/app/audit/$id": { label: "ລາຍລະອຽດການກວດກາ", parent: "/app/audit" },
+  "/app/rooms": { label: "ຫ້ອງພັກ" },
+  "/app/rooms/create": { label: "ເພີ່ມຫ້ອງ", parent: "/app/rooms" },
+  "/app/rooms/$id/edit": { label: "ແກ້ໄຂຫ້ອງ", parent: "/app/rooms" },
+  "/app/room-types": { label: "ປະເພດຫ້ອງ" },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },
 };

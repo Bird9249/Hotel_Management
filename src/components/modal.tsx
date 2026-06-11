@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DialogScrollBody } from "@/shared/ui/DialogScrollBody";
 import { cn } from "@/lib/utils";
 
 const sizeClasses = {
@@ -43,18 +44,29 @@ export function Modal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={showCloseButton}
-        className={cn(sizeClasses[size], className)}
+        className={cn(
+          "grid max-h-[min(90vh,720px)] gap-0 overflow-hidden p-0",
+          footer
+            ? "grid-rows-[auto_minmax(0,1fr)_auto]"
+            : "grid-rows-[auto_minmax(0,1fr)]",
+          sizeClasses[size],
+          className,
+        )}
       >
         {title || description ? (
-          <DialogHeader>
+          <DialogHeader className="border-b px-6 py-4">
             {title ? <DialogTitle>{title}</DialogTitle> : null}
             {description ? (
               <DialogDescription>{description}</DialogDescription>
             ) : null}
           </DialogHeader>
         ) : null}
-        {children}
-        {footer ? <DialogFooter>{footer}</DialogFooter> : null}
+        {children ? <DialogScrollBody>{children}</DialogScrollBody> : null}
+        {footer ? (
+          <DialogFooter className="border-t px-6 py-4">
+            {footer}
+          </DialogFooter>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

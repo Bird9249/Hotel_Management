@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { auditRoutes } from "@/modules/audit/api";
 import { authRoutes } from "@/modules/auth/api";
 import { rolesRoutes } from "@/modules/roles/api";
+import { roomsRoutes } from "@/modules/rooms/api";
 import { uploadRoutes } from "@/modules/upload/api";
 import { usersRoutes } from "@/modules/users/api";
 
@@ -10,6 +11,7 @@ export function createRestRoutes() {
     .use(authRoutes)
     .use(usersRoutes)
     .use(rolesRoutes)
+    .use(roomsRoutes)
     .use(auditRoutes)
     .use(uploadRoutes);
 }
