@@ -46,6 +46,7 @@ export const routeMeta: Record<string, RouteMeta> = {
     label: "ລາຍລະອຽດໃບບິນ",
     parent: "/app/invoices",
   },
+  "/app/cash-shifts": { label: "ກະເງິນສົດ" },
   "/app/reports": { label: "ລາຍງານ" },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },

@@ -20,11 +20,14 @@ Phase 3  Front Desk Ops (check-in / check-out)    ⬜
    │
 Phase 4  Billing & Invoicing                      ⬜
    │
+Phase 6  Cash Shift (Reception drawer)            ⬜  ← หลัง Billing, ก่อน go-live Reception
+   │
 Phase 5  Reporting (sales / occupancy)            ⬜
 ```
 
 > เหตุผลของลำดับ: ต้องมี "ห้อง" ก่อนจึงจะจองได้ → ต้องมี "การจอง" ก่อนจึงเช็คอินได้
-> → ต้องเช็คเอาท์/มีการเข้าพักก่อนจึงออกบิลได้ → มีข้อมูลครบจึงทำรายงานได้
+> → ต้องเช็คเอาท์/มีการเข้าพักก่อนจึงออกบิลได้ → ต้องมี `payment` ก่อนตัดกะเงินสด
+> → มีข้อมูลครบจึงทำรายงานได้
 
 ---
 
@@ -145,6 +148,34 @@ Phase 5  Reporting (sales / occupancy)            ⬜
 
 ---
 
+## Phase 6 — Cash Shift / Cash Drawer (⬜)
+
+ต่อยอดในโมดูล `billing` (+ schema `billing.ts`)
+
+> **MVP ขาดไม่ได้สำหรับ Reception** — ทำทันทีหลัง Phase 4 (ดูรายละเอียดใน [`implementation/PHASE_6_CASH_SHIFT.md`](./implementation/PHASE_6_CASH_SHIFT.md))
+
+### ขอบเขต
+- **Open Shift / Close Shift** — บันทึกพนักงานเข้าเวน + เวลาเปิด/ปิด
+- **Opening Cash** — เงินตั้งต้นในลิ้นชัก
+- **สรุปกะ** — ยอดรับเงินสด / โอน / บัตร ในกะนั้น + นับเงินจริง + variance ส่งมอบ
+
+### Data Model (ร่าง)
+| ตาราง | ฟิลด์หลัก |
+|-------|-----------|
+| `cash_shift` | id, status, opened_by, opened_at, opening_cash, closed_by, closed_at, closing_cash_counted, cash/transfer/card received, variance |
+| `payment` (เพิ่ม) | shift_id, recorded_by_user_id |
+
+### Tasks
+- [ ] Schema + migration
+- [ ] Permission `billing:shift`
+- [ ] Service เปิด/ปิดกะ + ผูก payment กับ shift
+- [ ] UI แถบสถานะกะบน Front Desk / Invoice
+- [ ] ประวัติกะสำหรับ Admin
+
+**Deliverable:** Reception เปิดกะ → รับเงิน → ปิดกะส่งมอบ พร้อมตรวจสอบเงินสดได้
+
+---
+
 ## Phase 5 — Basic Reporting (⬜)
 
 โมดูลใหม่: `src/modules/reports` (หรือเสริมใน `dashboard`)
@@ -170,7 +201,7 @@ Phase 5  Reporting (sales / occupancy)            ⬜
 | `rooms` | 1 | ⬜ |
 | `guests` | 2 | ⬜ |
 | `reservations` | 2–3 | ⬜ |
-| `billing` | 4 | ⬜ |
+| `billing` | 4, 6 | ⬜ |
 | `reports` | 5 | ⬜ |
 
 ---
@@ -182,5 +213,6 @@ Phase 5  Reporting (sales / occupancy)            ⬜
 - [ ] Phase 2: Guest Profile + Reservation + Booking Calendar
 - [ ] Phase 3: Check-in / Check-out + อัปเดตสถานะห้อง
 - [ ] Phase 4: Invoice + Payment + Tax
+- [ ] Phase 6: Cash Shift (Open/Close + Opening Cash + สรุปส่งมอบ)
 - [ ] Phase 5: Daily Sales Report + Occupancy Rate
 - [ ] ทดสอบสิทธิ์ครบทั้ง 3 roles (Admin / Receptionist / Housekeeping)

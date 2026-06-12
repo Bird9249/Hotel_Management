@@ -1,5 +1,6 @@
 import { confirm, toast } from "@/components/kit";
 import { getApiErrorAlert } from "./api-errors";
+import { stringifyForAPI } from "./date-time";
 
 type ApiErrorShape = { message?: string; error?: string } | null;
 
@@ -99,7 +100,7 @@ export const fetcher = {
     return requestJson<TResponse>(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body ?? {}),
+      body: stringifyForAPI(body),
       credentials: "include",
     });
   },
@@ -107,7 +108,7 @@ export const fetcher = {
     return requestJson<TResponse>(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body ?? {}),
+      body: stringifyForAPI(body),
       credentials: "include",
     });
   },
@@ -125,7 +126,7 @@ export const fetcher = {
     return requestJson<TResponse>(url, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body ?? {}),
+      body: stringifyForAPI(body),
       credentials: "include",
     });
   },

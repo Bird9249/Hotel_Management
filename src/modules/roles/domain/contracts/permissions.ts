@@ -34,6 +34,7 @@ export const Permissions = {
     read: "billing:read",
     invoice: "billing:invoice",
     payment: "billing:payment",
+    shift: "billing:shift",
   },
   reports: {
     read: "reports:read",
@@ -70,6 +71,7 @@ export const ACTION_LABELS: Record<string, string> = {
   checkout: "ເຊັກເອົາ",
   invoice: "ໃບບິນ",
   payment: "ຊຳລະເງິນ",
+  shift: "ກະເງິນສົດ",
   all: "ທັງໝົດ",
 };
 

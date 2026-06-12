@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
+import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
@@ -70,7 +71,9 @@ export const hotelGuestsRoutes = new Elysia()
     "/guests",
     async ({ db, body, status }) => {
       try {
-        const out = await createGuestService(db, { input: body });
+        const out = await runInTransaction(db, (tx) =>
+          createGuestService(tx, { input: body }),
+        );
         return status(201, out.created);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -86,10 +89,12 @@ export const hotelGuestsRoutes = new Elysia()
     "/guests/:id",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await updateGuestService(db, {
-          id: params.id,
-          input: body,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          updateGuestService(tx, {
+            id: params.id,
+            input: body,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -108,7 +113,9 @@ export const hotelGuestsRoutes = new Elysia()
     "/guests/:id",
     async ({ db, params, status }) => {
       try {
-        const { deleted } = await deleteGuestService(db, { id: params.id });
+        const { deleted } = await runInTransaction(db, (tx) =>
+          deleteGuestService(tx, { id: params.id }),
+        );
         return deleted;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);

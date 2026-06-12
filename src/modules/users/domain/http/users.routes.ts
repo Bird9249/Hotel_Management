@@ -1,7 +1,9 @@
 import { Elysia } from "elysia";
 import { z } from "zod";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
+import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
+import { deleteUserImage } from "@/server/utils/delete-user-image";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
 import { BanUserSchema, IdParamSchema } from "../contracts";
 import { getUserById } from "../repo/get-by-id";
@@ -57,15 +59,17 @@ export const usersRoutes = new Elysia()
     "/",
     async ({ db, body, status }) => {
       try {
-        const out = await createUserService(db, {
-          input: {
-            email: body.email,
-            name: body.name,
-            password: body.password,
-            roleId: body.roleId,
-            image: body.image ?? undefined,
-          },
-        });
+        const out = await runInTransaction(db, (tx) =>
+          createUserService(tx, {
+            input: {
+              email: body.email,
+              name: body.name,
+              password: body.password,
+              roleId: body.roleId,
+              image: body.image ?? undefined,
+            },
+          }),
+        );
         return status(201, out.created);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -81,16 +85,19 @@ export const usersRoutes = new Elysia()
     "/:id",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await updateUserService(db, {
-          id: params.id,
-          input: {
-            email: body.email,
-            name: body.name,
-            roleId: body.roleId,
-            password: body.password,
-            image: body.imageDelete ? null : (body.image ?? undefined),
-          },
-        });
+        const { updated, oldImageToDelete } = await runInTransaction(db, (tx) =>
+          updateUserService(tx, {
+            id: params.id,
+            input: {
+              email: body.email,
+              name: body.name,
+              roleId: body.roleId,
+              password: body.password,
+              image: body.imageDelete ? null : (body.image ?? undefined),
+            },
+          }),
+        );
+        if (oldImageToDelete) await deleteUserImage(oldImageToDelete);
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -109,8 +116,11 @@ export const usersRoutes = new Elysia()
     "/:id",
     async ({ db, params, status }) => {
       try {
-        const { deleted } = await deleteUserService(db, { id: params.id });
+        const { deleted, imageToDelete } = await runInTransaction(db, (tx) =>
+          deleteUserService(tx, { id: params.id }),
+        );
         if (!deleted) return status(404, { error: "NOT_FOUND" });
+        if (imageToDelete) await deleteUserImage(imageToDelete);
         return deleted;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -126,11 +136,13 @@ export const usersRoutes = new Elysia()
     "/:id/ban",
     async ({ db, params, body, status }) => {
       try {
-        const result = await banUserService(db, {
-          id: params.id,
-          reason: body.reason ?? undefined,
-          expires: body.expires ?? null,
-        });
+        const result = await runInTransaction(db, (tx) =>
+          banUserService(tx, {
+            id: params.id,
+            reason: body.reason ?? undefined,
+            expires: body.expires ?? null,
+          }),
+        );
         return result;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -147,7 +159,9 @@ export const usersRoutes = new Elysia()
     "/:id/unban",
     async ({ db, params, status }) => {
       try {
-        const result = await unbanUserService(db, { id: params.id });
+        const result = await runInTransaction(db, (tx) =>
+          unbanUserService(tx, { id: params.id }),
+        );
         return result;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);

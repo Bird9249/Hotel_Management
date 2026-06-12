@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
+import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
@@ -84,7 +85,9 @@ export const hotelRoomsRoutes = new Elysia()
     "/room-types",
     async ({ db, body, status }) => {
       try {
-        const out = await createRoomTypeService(db, { input: body });
+        const out = await runInTransaction(db, (tx) =>
+          createRoomTypeService(tx, { input: body }),
+        );
         return status(201, out.created);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -100,10 +103,12 @@ export const hotelRoomsRoutes = new Elysia()
     "/room-types/:id",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await updateRoomTypeService(db, {
-          id: params.id,
-          input: body,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          updateRoomTypeService(tx, {
+            id: params.id,
+            input: body,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -122,7 +127,9 @@ export const hotelRoomsRoutes = new Elysia()
     "/room-types/:id",
     async ({ db, params, status }) => {
       try {
-        const { deleted } = await deleteRoomTypeService(db, { id: params.id });
+        const { deleted } = await runInTransaction(db, (tx) =>
+          deleteRoomTypeService(tx, { id: params.id }),
+        );
         return deleted;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -162,7 +169,9 @@ export const hotelRoomsRoutes = new Elysia()
     "/rooms",
     async ({ db, body, status }) => {
       try {
-        const out = await createRoomService(db, { input: body });
+        const out = await runInTransaction(db, (tx) =>
+          createRoomService(tx, { input: body }),
+        );
         return status(201, out.created);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -182,10 +191,12 @@ export const hotelRoomsRoutes = new Elysia()
     "/rooms/:id",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await updateRoomService(db, {
-          id: params.id,
-          input: body,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          updateRoomService(tx, {
+            id: params.id,
+            input: body,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -206,10 +217,12 @@ export const hotelRoomsRoutes = new Elysia()
     "/rooms/:id/status",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await setRoomStatusService(db, {
-          id: params.id,
-          input: body,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          setRoomStatusService(tx, {
+            id: params.id,
+            input: body,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -228,7 +241,9 @@ export const hotelRoomsRoutes = new Elysia()
     "/rooms/:id",
     async ({ db, params, status }) => {
       try {
-        const { deleted } = await deleteRoomService(db, { id: params.id });
+        const { deleted } = await runInTransaction(db, (tx) =>
+          deleteRoomService(tx, { id: params.id }),
+        );
         return deleted;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);

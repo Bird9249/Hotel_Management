@@ -1,4 +1,5 @@
 import {
+  Banknote,
   BedDouble,
   BrushCleaning,
   CalendarCheck,
@@ -93,6 +94,12 @@ export const sidebarData: SidebarData = {
           url: "/app/invoices",
           icon: ReceiptText,
           requiredPermissions: ["billing:read"],
+        },
+        {
+          title: "ກະເງິນສົດ",
+          url: "/app/cash-shifts",
+          icon: Banknote,
+          requiredPermissions: ["billing:shift"],
         },
         {
           title: "ລາຍງານ",

@@ -1,37 +1,70 @@
+import { Header } from "@/app/layout/Header";
+import { Main } from "@/app/layout/Main";
+import {
+  Button,
+  Card,
+  CardContent,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  toast,
+} from "@/components/kit";
+import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
+import { useHotelBrandingQuery } from "@/modules/settings/presentation/api/queries";
+import { QueryState } from "@/shared/ui/QueryState";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ArrowLeftIcon, Banknote, Printer } from "lucide-react";
-import { useState } from "react";
-import { Header } from "@/app/layout/Header";
-import { Main } from "@/app/layout/Main";
-import { Button, Card, CardContent, toast } from "@/components/kit";
-import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
-import { QueryState } from "@/shared/ui/QueryState";
-import { useAddPayment, useInvoiceQuery } from "../api/queries";
+import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  useAddPayment,
+  useCurrentShiftQuery,
+  useInvoiceQuery,
+} from "../api/queries";
 import { AddPaymentDialog } from "../ui/AddPaymentDialog";
-import { InvoicePrint } from "../ui/InvoicePrint";
+import {
+  InvoicePrint,
+  type InvoicePrintCopies,
+  type InvoicePrintFormat,
+} from "../ui/InvoicePrint";
 import { InvoiceStatusBadge } from "../ui/InvoiceStatusBadge";
+import { ShiftStatusBar } from "../ui/ShiftStatusBar";
 import {
   displayInvoiceNumber,
   formatMoney,
   getPaymentMethodLabel,
 } from "../ui/invoice-status";
+import { printInvoiceNode } from "../ui/print-invoice";
 
 export function InvoiceDetailPage() {
   const nav = useNavigate({ from: "/app/invoices/$id" });
   const { id } = useParams({ from: "/app/invoices/$id" });
   const { data, ...result } = useInvoiceQuery(id);
   const addPayment = useAddPayment(id);
+  const currentShift = useCurrentShiftQuery();
   const canPay = useActionPermission(["billing:payment"]);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [printFormat, setPrintFormat] = useState<InvoicePrintFormat>("a4");
+  const [printCopies, setPrintCopies] = useState<InvoicePrintCopies>(1);
+  const branding = useHotelBrandingQuery();
+  const printMountRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const mount = printMountRef.current;
+    if (!mount?.firstElementChild) return;
+    printInvoiceNode(mount, printFormat);
+  };
 
   return (
     <>
       <div className="print:hidden">
         <Header />
         <Main>
+          <ShiftStatusBar />
+
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <Button
               variant="outline"
@@ -40,7 +73,33 @@ export function InvoiceDetailPage() {
               <ArrowLeftIcon className="size-4" />
               ກັບຄືນ
             </Button>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={printFormat}
+                onValueChange={(v) => setPrintFormat(v as InvoicePrintFormat)}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="ຮູບແບບພິມ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="a4">A4</SelectItem>
+                  <SelectItem value="thermal">Thermal 80mm</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={String(printCopies)}
+                onValueChange={(v) =>
+                  setPrintCopies(Number(v) as InvoicePrintCopies)
+                }
+              >
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="ຈຳນວນສຳເນົາ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 ສຳເນົາ</SelectItem>
+                  <SelectItem value="2">2 ສຳເນົາ</SelectItem>
+                </SelectContent>
+              </Select>
               <Button variant="outline" onClick={handlePrint}>
                 <Printer className="size-4" />
                 ພິມ
@@ -109,6 +168,7 @@ export function InvoiceDetailPage() {
                       <p>
                         <span className="text-muted-foreground">ຫ້ອງ:</span>{" "}
                         {data.roomNumber}
+                        {data.roomTypeName ? ` (${data.roomTypeName})` : ""}
                       </p>
                       <p>
                         <span className="text-muted-foreground">ເຂົ້າ–ອອກ:</span>{" "}
@@ -187,6 +247,9 @@ export function InvoiceDetailPage() {
                             <span>
                               {getPaymentMethodLabel(p.method)} —{" "}
                               {format(new Date(p.paidAt), "dd/MM/yyyy HH:mm")}
+                              {p.recordedByName
+                                ? ` · ຮັບໂດຍ ${p.recordedByName}`
+                                : ""}
                             </span>
                             <span className="font-medium">
                               {formatMoney(p.amount)} ₭
@@ -204,6 +267,9 @@ export function InvoiceDetailPage() {
                   balance={data.balance}
                   submitting={addPayment.isPending}
                   onSubmit={async (vals) => {
+                    if (vals.method === "cash" && !currentShift.data) {
+                      toast.warning("ກະລຸນາເປີດກະເງິນສົດກ່ອນຮັບເງິນສົດ");
+                    }
                     try {
                       await addPayment.mutateAsync(vals);
                       toast.success("ບັນທຶກການຊຳລະສໍາເລັດ");
@@ -219,11 +285,18 @@ export function InvoiceDetailPage() {
         </Main>
       </div>
 
-      {data && (
-        <div className="hidden w-full print:block">
-          <InvoicePrint invoice={data} />
-        </div>
-      )}
+      {data &&
+        createPortal(
+          <div ref={printMountRef} className="invoice-print-mount">
+            <InvoicePrint
+              invoice={data}
+              branding={branding.data}
+              format={printFormat}
+              copies={printCopies}
+            />
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

@@ -1,5 +1,30 @@
 import { numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { user } from "./auth";
 import { reservation } from "./reservations";
+
+export const cashShift = pgTable("cash_shift", {
+  id: text("id").primaryKey(),
+  status: text("status").notNull().default("open"),
+  openedByUserId: text("opened_by_user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "restrict" }),
+  openedAt: timestamp("opened_at").notNull().defaultNow(),
+  openingCash: numeric("opening_cash", { precision: 12, scale: 2 }).notNull(),
+  closedByUserId: text("closed_by_user_id").references(() => user.id, {
+    onDelete: "restrict",
+  }),
+  closedAt: timestamp("closed_at"),
+  closingCashCounted: numeric("closing_cash_counted", {
+    precision: 12,
+    scale: 2,
+  }),
+  cashReceived: numeric("cash_received", { precision: 12, scale: 2 }),
+  transferReceived: numeric("transfer_received", { precision: 12, scale: 2 }),
+  cardReceived: numeric("card_received", { precision: 12, scale: 2 }),
+  expectedCash: numeric("expected_cash", { precision: 12, scale: 2 }),
+  variance: numeric("variance", { precision: 12, scale: 2 }),
+  handoverNote: text("handover_note"),
+});
 
 export const invoice = pgTable("invoice", {
   id: text("id").primaryKey(),
@@ -39,4 +64,10 @@ export const payment = pgTable("payment", {
   method: text("method").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   paidAt: timestamp("paid_at").notNull().defaultNow(),
+  shiftId: text("shift_id").references(() => cashShift.id, {
+    onDelete: "set null",
+  }),
+  recordedByUserId: text("recorded_by_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
 });

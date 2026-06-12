@@ -3,8 +3,8 @@
 
 @font-face {
   font-family: "Noto Sans Lao Looped";
-  src:
-    url("../src/assets/Noto_Sans_Lao_Looped/NotoSansLaoLooped-Regular.woff2") format("woff2");
+  src: url("../src/assets/Noto_Sans_Lao_Looped/NotoSansLaoLooped-Regular.woff2")
+    format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -12,8 +12,8 @@
 
 @font-face {
   font-family: "Noto Sans Lao Looped";
-  src:
-    url("../src/assets/Noto_Sans_Lao_Looped/NotoSansLaoLooped-Medium.woff2") format("woff2");
+  src: url("../src/assets/Noto_Sans_Lao_Looped/NotoSansLaoLooped-Medium.woff2")
+    format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -21,8 +21,8 @@
 
 @font-face {
   font-family: "Noto Sans Lao Looped";
-  src:
-    url("../src/assets/Noto_Sans_Lao_Looped/NotoSansLaoLooped-Bold.woff2") format("woff2");
+  src: url("../src/assets/Noto_Sans_Lao_Looped/NotoSansLaoLooped-Bold.woff2")
+    format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -152,45 +152,79 @@
   }
 }
 
+/* ซ่อน mount บนจอ — พิมพ์ผ่าน iframe ไม่ใช้ window.print() บน document หลัก */
+.invoice-print-mount {
+  display: none;
+}
+
 @media print {
+  html,
+  body {
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* fallback Ctrl+P — ซ่อน app shell */
+  body > *:not(.invoice-print-mount) {
+    display: none !important;
+  }
+
+  .invoice-print-mount {
+    display: block !important;
+  }
+
   @page {
     size: A4;
     margin: 10mm;
   }
 
+  .invoice-print-root {
+    margin: 0 auto;
+  }
+
+  html[data-print-format="a4"] .invoice-print-copy--continued {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .invoice-print-qr {
+    height: auto !important;
+    max-width: 100%;
+    width: auto !important;
+  }
+
   .invoice-print {
     max-width: none !important;
     width: 100% !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
-  }
-
-  [data-slot="sidebar"],
-  [data-slot="sidebar-gap"],
-  [data-slot="sidebar-container"],
-  [data-sidebar="trigger"],
-  [data-sidebar="rail"] {
-    display: none !important;
-  }
-
-  [data-slot="sidebar-wrapper"],
-  [data-slot="sidebar-inset"] {
-    min-height: auto !important;
-  }
-
-  [data-slot="sidebar-inset"] {
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
+    color: #000 !important;
     background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  main[data-layout] {
-    padding: 0 !important;
+  .invoice-print * {
+    color: inherit;
   }
 
-  body {
-    background: #fff !important;
+  .invoice-print .text-neutral-600,
+  .invoice-print .text-neutral-700 {
+    color: #404040 !important;
+  }
+
+  html[data-print-format="thermal"] .invoice-print-root {
+    max-width: 72mm;
+    width: 72mm;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  html[data-print-format="thermal"] .invoice-print {
+    max-width: 72mm !important;
+    width: 72mm !important;
   }
 }

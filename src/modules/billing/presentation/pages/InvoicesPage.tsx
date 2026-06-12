@@ -6,6 +6,7 @@ import type { OffsetPageQueryDTO } from "@/shared/contracts/base";
 import { useInvoicesQuery } from "../api/queries";
 import { InvoicesFilter } from "../ui/InvoicesFilter";
 import { InvoicesTable } from "../ui/InvoicesTable";
+import { ShiftStatusBar } from "../ui/ShiftStatusBar";
 
 export function InvoicesPage() {
   const nav = useNavigate({ from: "/app/invoices" });
@@ -29,6 +30,8 @@ export function InvoicesPage() {
           </h2>
           <p className="text-muted-foreground">ຈັດການໃບບິນ ແລະ ການຊຳລະເງິນ.</p>
         </div>
+
+        <ShiftStatusBar />
 
         <div className="flex flex-col rounded-xl border bg-card">
           <InvoicesFilter />

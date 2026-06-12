@@ -18,6 +18,7 @@ export const Roles: Record<string, PermissionId[]> = {
     "billing:read",
     "billing:invoice",
     "billing:payment",
+    "billing:shift",
     "reports:read",
   ],
   housekeeping: ["rooms:read", "rooms:status"],

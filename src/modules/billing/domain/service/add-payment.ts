@@ -4,6 +4,7 @@ import type { AddPaymentInput } from "../contracts";
 import { toMoney } from "../lib/money";
 import { addPayment as addPaymentDb } from "../repo/add-payment";
 import { getInvoiceById } from "../repo/get-invoice-by-id";
+import { getOpenShift } from "../repo/get-open-shift";
 import { sumPayments } from "../repo/sum-payments";
 import { updateInvoiceStatus } from "../repo/update-invoice-status";
 
@@ -15,11 +16,17 @@ function resolvePaymentStatus(paidTotal: number, invoiceTotal: number) {
 
 export async function addPaymentService(
   client: DbTransaction,
-  params: { invoiceId: string; input: AddPaymentInput },
+  params: {
+    invoiceId: string;
+    input: AddPaymentInput;
+    actorId?: string | null;
+  },
 ) {
   const invoice = await getInvoiceById(params.invoiceId, client);
   if (!invoice) throw new Error("INVOICE_NOT_FOUND");
   if (invoice.status === "paid") throw new Error("INVOICE_ALREADY_PAID");
+
+  const openShift = await getOpenShift(client);
 
   const payment = await addPaymentDb(
     {
@@ -27,6 +34,8 @@ export async function addPaymentService(
       invoiceId: params.invoiceId,
       method: params.input.method,
       amount: toMoney(params.input.amount),
+      shiftId: openShift?.id ?? null,
+      recordedByUserId: params.actorId ?? null,
     },
     client,
   );

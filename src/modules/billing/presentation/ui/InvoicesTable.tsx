@@ -99,8 +99,14 @@ export function InvoicesTable({
       totalCount={totalCount}
       sortBy={sortBy}
       sortOrder={sortOrder}
-      onPaginationChange={onPaginationChange}
-      onSortingChange={onSortingChange}
+      onPaginationChange={(pagination) =>
+        onPaginationChange(pagination.offset, pagination.limit)
+      }
+      onSortingChange={(sorting) => {
+        const first = sorting[0];
+        if (!first?.id) return;
+        onSortingChange(first.id, first.desc);
+      }}
       noDataMessage="ບໍ່ພົບໃບບິນ"
     />
   );

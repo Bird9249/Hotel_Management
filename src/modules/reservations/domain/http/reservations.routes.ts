@@ -3,6 +3,7 @@ import { getInvoiceById } from "@/modules/billing/domain/repo/get-invoice-by-id"
 import { getInvoiceByReservationId } from "@/modules/billing/domain/repo/get-invoice-by-reservation";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
+import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
 import {
@@ -59,7 +60,9 @@ export const hotelReservationsRoutes = new Elysia()
     "/reservations",
     async ({ db, body, status }) => {
       try {
-        const out = await createReservationService(db, { input: body });
+        const out = await runInTransaction(db, (tx) =>
+          createReservationService(tx, { input: body }),
+        );
         return status(201, out.created);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -79,10 +82,12 @@ export const hotelReservationsRoutes = new Elysia()
     "/reservations/:id",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await updateReservationService(db, {
-          id: params.id,
-          input: body,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          updateReservationService(tx, {
+            id: params.id,
+            input: body,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -109,9 +114,11 @@ export const hotelReservationsRoutes = new Elysia()
     "/reservations/:id/cancel",
     async ({ db, params, status }) => {
       try {
-        const { updated } = await cancelReservationService(db, {
-          id: params.id,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          cancelReservationService(tx, {
+            id: params.id,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -133,9 +140,11 @@ export const hotelReservationsRoutes = new Elysia()
     "/reservations/:id/check-in",
     async ({ db, params, status }) => {
       try {
-        const { updated } = await checkInService(db, {
-          reservationId: params.id,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          checkInService(tx, {
+            reservationId: params.id,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -169,9 +178,11 @@ export const hotelReservationsRoutes = new Elysia()
     "/reservations/:id/check-out",
     async ({ db, params, status }) => {
       try {
-        const { updated } = await checkOutService(db, {
-          reservationId: params.id,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          checkOutService(tx, {
+            reservationId: params.id,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);

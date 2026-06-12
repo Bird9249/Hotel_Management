@@ -195,10 +195,29 @@ const InvoiceDetailPage = lazy(() =>
     }),
   ),
 );
+const CashShiftPage = lazy(() =>
+  import("@/modules/billing/presentation/pages/CashShiftPage").then(
+    (module) => ({
+      default: module.CashShiftPage,
+    }),
+  ),
+);
 const ReportsPage = lazy(() =>
   import("@/modules/reports/presentation/pages/ReportsPage").then((module) => ({
     default: module.ReportsPage,
   })),
+);
+const PublicVerifyLayout = lazy(() =>
+  import("./layout/PublicVerifyLayout").then((module) => ({
+    default: module.PublicVerifyLayout,
+  })),
+);
+const InvoiceVerifyPage = lazy(() =>
+  import("@/modules/billing/presentation/pages/InvoiceVerifyPage").then(
+    (module) => ({
+      default: module.InvoiceVerifyPage,
+    }),
+  ),
 );
 const Forbidden = lazy(() =>
   import("./error/Forbidden").then((module) => ({
@@ -544,6 +563,18 @@ const invoiceDetailRoute = createRoute({
   ),
 });
 
+const cashShiftsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/cash-shifts",
+  component: () => (
+    <RequirePermissions all={["billing:shift"]}>
+      <LazyPage>
+        <CashShiftPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const reportsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/reports",
@@ -566,8 +597,28 @@ const forbiddenRoute = createRoute({
   ),
 });
 
+const verifyLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/verify",
+  component: PublicVerifyLayout,
+});
+
+const invoiceVerifyRoute = createRoute({
+  getParentRoute: () => verifyLayoutRoute,
+  path: "/invoice/$id",
+  validateSearch: (search: Record<string, unknown>) => ({
+    t: typeof search.t === "string" ? search.t : "",
+  }),
+  component: () => (
+    <LazyPage>
+      <InvoiceVerifyPage />
+    </LazyPage>
+  ),
+});
+
 export const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([loginRoute]),
+  verifyLayoutRoute.addChildren([invoiceVerifyRoute]),
   appRoute.addChildren([
     dashboardRoute,
     rolesRoute,
@@ -595,6 +646,7 @@ export const routeTree = rootRoute.addChildren([
     housekeepingRoute,
     invoicesRoute,
     invoiceDetailRoute,
+    cashShiftsRoute,
     reportsRoute,
   ]),
   forbiddenRoute,

@@ -1,14 +1,16 @@
-import { Bell, Compass, Monitor, PanelsTopLeft, UserCog } from "lucide-react";
+import { Bell, Building2, Compass, Monitor, PanelsTopLeft, UserCog } from "lucide-react";
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/kit";
+import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
 import { AccountSection } from "../ui/AccountSection";
 import { AppearanceSection } from "../ui/AppearanceSection";
+import { HotelBrandingSection } from "../ui/HotelBrandingSection";
 import { LayoutSection } from "../ui/LayoutSection";
 import { NotificationsSection } from "../ui/NotificationsSection";
 import { OnboardingSection } from "../ui/OnboardingSection";
 
-const tabs = [
+const personalTabs = [
   { value: "account", label: "ບັນຊີ", icon: UserCog },
   { value: "appearance", label: "ຮູບລັກສະນະ", icon: Monitor },
   { value: "notifications", label: "ການແຈ້ງເຕືອນ", icon: Bell },
@@ -17,6 +19,8 @@ const tabs = [
 ] as const;
 
 export function SettingsPage() {
+  const canManageHotel = useActionPermission(["users:update"]);
+
   return (
     <>
       <Header />
@@ -31,12 +35,18 @@ export function SettingsPage() {
 
         <Tabs defaultValue="account" className="gap-6">
           <TabsList className="h-auto flex-wrap justify-start">
-            {tabs.map(({ value, label, icon: Icon }) => (
+            {personalTabs.map(({ value, label, icon: Icon }) => (
               <TabsTrigger key={value} value={value}>
                 <Icon className="size-4" />
                 {label}
               </TabsTrigger>
             ))}
+            {canManageHotel ? (
+              <TabsTrigger value="hotel">
+                <Building2 className="size-4" />
+                ໂຮງແຮມ
+              </TabsTrigger>
+            ) : null}
           </TabsList>
 
           <TabsContent value="account">
@@ -54,6 +64,11 @@ export function SettingsPage() {
           <TabsContent value="onboarding">
             <OnboardingSection />
           </TabsContent>
+          {canManageHotel ? (
+            <TabsContent value="hotel">
+              <HotelBrandingSection />
+            </TabsContent>
+          ) : null}
         </Tabs>
       </Main>
     </>

@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import type { LucideIcon } from "lucide-react";
 import {
+  Banknote,
   BrushCleaning,
   CalendarCheck,
   CalendarDays,
@@ -8,7 +10,6 @@ import {
   ReceiptText,
   UserRound,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -62,6 +63,13 @@ const quickActions: QuickAction[] = [
     url: "/app/invoices",
     icon: ReceiptText,
     requiredPermissions: ["billing:read"],
+  },
+  {
+    title: "ກະເງິນສົດ",
+    description: "ເປີດ–ປິດກະ",
+    url: "/app/cash-shifts",
+    icon: Banknote,
+    requiredPermissions: ["billing:shift"],
   },
   {
     title: "ລາຍງານ",

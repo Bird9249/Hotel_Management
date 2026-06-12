@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
+import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
@@ -80,7 +81,9 @@ export const rbacRoutes = new Elysia()
     "/roles",
     async ({ db, body, status }) => {
       try {
-        const out = await createRoleService(db, { input: body });
+        const out = await runInTransaction(db, (tx) =>
+          createRoleService(tx, { input: body }),
+        );
         return status(201, out.created);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -96,10 +99,12 @@ export const rbacRoutes = new Elysia()
     "/roles/:id",
     async ({ db, params, body, status }) => {
       try {
-        const { updated } = await updateRoleService(db, {
-          id: params.id,
-          input: body,
-        });
+        const { updated } = await runInTransaction(db, (tx) =>
+          updateRoleService(tx, {
+            id: params.id,
+            input: body,
+          }),
+        );
         return updated;
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -118,7 +123,9 @@ export const rbacRoutes = new Elysia()
     "/roles/:id",
     async ({ db, params, status }) => {
       try {
-        const { deleted } = await deleteRoleService(db, { id: params.id });
+        const { deleted } = await runInTransaction(db, (tx) =>
+          deleteRoleService(tx, { id: params.id }),
+        );
         if (!deleted) return status(404, { error: "NOT_FOUND" });
         return deleted;
       } catch (e) {

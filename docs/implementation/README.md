@@ -13,6 +13,7 @@
 | 3 | [`PHASE_3_FRONT_DESK.md`](./PHASE_3_FRONT_DESK.md) | Check-in / Check-out + อัปเดตสถานะห้องอัตโนมัติ |
 | 4 | [`PHASE_4_BILLING.md`](./PHASE_4_BILLING.md) | โมดูล `billing` — Invoice + Payment + Tax |
 | 5 | [`PHASE_5_REPORTING.md`](./PHASE_5_REPORTING.md) | โมดูล `reports` — Daily Sales + Occupancy Rate |
+| 6 | [`PHASE_6_CASH_SHIFT.md`](./PHASE_6_CASH_SHIFT.md) | ກະເງິນສົດ Reception — Open/Close Shift + Opening Cash + สรุปส่งมอบ |
 
 ---
 

@@ -1,4 +1,3 @@
-import { deleteUserImage } from "@/server/utils/delete-user-image";
 import type { UpdateUserDTO } from "../contracts";
 import { getUserById } from "../repo/get-by-id";
 import { updateUser as updateUserDb } from "../repo/update";
@@ -28,8 +27,5 @@ export async function updateUserService(
   const next: UpdateUserDTO = { ...input, image: nextImage };
   const updated = await updateUserDb(id, next, client);
   if (!updated) throw new Error("Failed to update user");
-  if (oldImageToDelete) {
-    await deleteUserImage(oldImageToDelete);
-  }
-  return { updated, before: existing };
+  return { updated, before: existing, oldImageToDelete };
 }

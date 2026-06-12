@@ -1,6 +1,8 @@
 import { Elysia } from "elysia";
 import { z } from "zod";
+import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
+import { deleteUserImage } from "@/server/utils/delete-user-image";
 import { getUserById } from "../repo/get-by-id";
 import { updateUserService } from "../service/update";
 
@@ -25,16 +27,19 @@ export const meRoutes = new Elysia()
     async ({ user, db, body, status }) => {
       if (!user) return status(401, { error: "UNAUTHORIZED" });
       try {
-        const { updated } = await updateUserService(db, {
-          id: user.id,
-          input: {
-            email: body.email,
-            name: body.name,
-            password: body.password,
-            roleId: undefined,
-            image: body.imageDelete ? null : (body.image ?? undefined),
-          },
-        });
+        const { updated, oldImageToDelete } = await runInTransaction(db, (tx) =>
+          updateUserService(tx, {
+            id: user.id,
+            input: {
+              email: body.email,
+              name: body.name,
+              password: body.password,
+              roleId: undefined,
+              image: body.imageDelete ? null : (body.image ?? undefined),
+            },
+          }),
+        );
+        if (oldImageToDelete) await deleteUserImage(oldImageToDelete);
         return { user: updated };
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);

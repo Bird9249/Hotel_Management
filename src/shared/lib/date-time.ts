@@ -10,7 +10,8 @@
  *
  * ## Frontend
  * - **แสดงผล**: ใช้ `formatDateTimeLocal(date)` หรือ `formatDateLocal(date)` (ตาม timezone ของ browser)
- * - **ส่งค่าไป API (POST/PUT)**: ส่งเป็น ISO string เช่น `date.toISOString()` (หรือใช้ `toISOForAPI(date)`)
+ * - **บันทึกข้อมูล (POST/PUT/PATCH body)**: ส่ง datetime เป็น ISO string — `fetcher` แปลง `Date` อัตโนมัติผ่าน `stringifyForAPI`; หรือแปลงเองด้วย `toISOForAPI(date)` ในฟอร์ม
+ * - **Query params (GET)**: ไม่ใช้ `stringifyForAPI` — ใช้ `JSON.stringify` ตามเดิม; วันที่ใน filter จัดการเอง (เช่น `startOfDayISO` / `yyyy-MM-dd`)
  * - **รับค่าจาก API**: API ส่ง ISO มาแล้ว parse เป็น Date ได้เลย เช่น `new Date(isoString)` แล้วค่อย format แสดง
  *
  * ## หลักการ
@@ -123,4 +124,47 @@ export function toISOForAPI(
   if (date == null) return undefined;
   const d = typeof date === "string" ? new Date(date) : date;
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
+/**
+ * ต้นวัน (local) เป็น ISO สำหรับ filter gte
+ */
+export function startOfDayISO(date: Date | string): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+/**
+ * ปลายวัน (local) เป็น ISO สำหรับ filter lte
+ */
+export function endOfDayISO(date: Date | string): string {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+}
+
+/**
+ * แปลง Date ใน object/array เป็น ISO string ก่อนส่ง API (recursive)
+ */
+export function serializeForAPI(value: unknown): unknown {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map(serializeForAPI);
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, serializeForAPI(v)]),
+    );
+  }
+  return value;
+}
+
+/**
+ * JSON.stringify หลังแปลง Date เป็น ISO — ใช้เฉพาะ body ของ POST/PUT/PATCH ใน fetcher
+ */
+export function stringifyForAPI(value: unknown): string {
+  return JSON.stringify(serializeForAPI(value ?? {}));
 }

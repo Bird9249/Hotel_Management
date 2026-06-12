@@ -3,7 +3,7 @@ import type { DbClient } from "@/server/platform/db/client";
 import { invoice, invoiceItem } from "@/server/platform/db/schema/billing";
 import { guest } from "@/server/platform/db/schema/hotel-guests";
 import { reservation } from "@/server/platform/db/schema/reservations";
-import { room } from "@/server/platform/db/schema/rooms";
+import { room, roomType } from "@/server/platform/db/schema/rooms";
 import type { DbTransaction } from "@/shared/types";
 import { listPaymentsByInvoice } from "./list-payments-by-invoice";
 import { sumPayments } from "./sum-payments";
@@ -13,6 +13,7 @@ export type InvoiceDetail = {
   reservationId: string;
   guestName: string;
   roomNumber: string;
+  roomTypeName: string | null;
   checkInDate: string;
   checkOutDate: string;
   subtotal: string;
@@ -33,6 +34,7 @@ export type InvoiceDetail = {
     method: string;
     amount: string;
     paidAt: Date;
+    recordedByName: string | null;
   }[];
   paidTotal: number;
   balance: number;
@@ -48,6 +50,7 @@ export async function getInvoiceById(
       reservationId: invoice.reservationId,
       guestName: guest.fullName,
       roomNumber: room.roomNumber,
+      roomTypeName: roomType.name,
       checkInDate: reservation.checkInDate,
       checkOutDate: reservation.checkOutDate,
       subtotal: invoice.subtotal,
@@ -61,6 +64,7 @@ export async function getInvoiceById(
     .innerJoin(reservation, eq(invoice.reservationId, reservation.id))
     .innerJoin(guest, eq(reservation.guestId, guest.id))
     .innerJoin(room, eq(reservation.roomId, room.id))
+    .innerJoin(roomType, eq(room.roomTypeId, roomType.id))
     .where(eq(invoice.id, id))
     .limit(1);
 
@@ -90,6 +94,7 @@ export async function getInvoiceById(
       method: p.method,
       amount: p.amount,
       paidAt: p.paidAt,
+      recordedByName: p.recordedByName,
     })),
     paidTotal,
     balance: Math.max(0, balance),

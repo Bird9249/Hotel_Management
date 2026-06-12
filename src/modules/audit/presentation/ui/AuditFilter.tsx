@@ -17,7 +17,12 @@ import {
   upsertCondition,
   upsertOrGroup,
 } from "@/shared/contracts/query-helpers";
-import { formatDateForInput, parseISO } from "@/shared/lib/date-time";
+import {
+  endOfDayISO,
+  formatDateForInput,
+  parseISO,
+  startOfDayISO,
+} from "@/shared/lib/date-time";
 import { SimpleSelect } from "@/shared/ui/SimpleSelect";
 
 export function AuditFilter() {
@@ -149,18 +154,18 @@ export function AuditFilter() {
               let nextFilters: FilterConditionDTO[] | undefined = filters;
               nextFilters = removeConditions(nextFilters, "occurredAt");
               const dateRange: FilterConditionDTO[] = [];
-              if (fromStr)
+              if (from)
                 dateRange.push({
                   field: "occurredAt",
                   op: "gte",
-                  value: `${fromStr} 00:00:00`,
+                  value: startOfDayISO(from),
                 });
 
-              if (toStr)
+              if (to)
                 dateRange.push({
                   field: "occurredAt",
                   op: "lte",
-                  value: `${toStr} 23:59:59`,
+                  value: endOfDayISO(to),
                 });
 
               nextFilters = upsertCondition(nextFilters, {
