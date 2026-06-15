@@ -32,8 +32,7 @@ Do not include secrets, tokens, raw passwords, or unredacted PII anywhere.
 1. Ensure context values are available in the request scope (requestId, traceId, ip, userAgent, tenantId, actorId, actorRole).
 2. In the service that performs the mutation, build an AuditEvent with those values, an action string, entityType/entityId, result, and optional error.
 3. Provide before/after snapshots restricted to allowed fields per entityType (allowlist). If not available or unknown, omit.
-4. Append within the same DB transaction as the state change to ensure atomic write into `audit_outbox`.
-5. The outbox message storage (`src/server/shared/outbox/message-storage.ts`) writes to `outbox` table; pg-transactional-outbox service processes messages and flushes to `audit_logs` asynchronously.
+4. Call `appendAudit(client, events)` from `src/modules/audit/domain/services/append-audit.ts` within the same DB transaction as the state change when possible.
 
 ### Integration patterns
 
@@ -48,25 +47,19 @@ Do not include secrets, tokens, raw passwords, or unredacted PII anywhere.
 
 - Routes call services directly for actions; services are responsible for appending audit events.
 - Read endpoints may call repos directly; only mutation paths should emit audit events.
-- Apply redaction/allowlist before writing to the outbox. Never include secrets/tokens/raw PII.
+- Apply redaction/allowlist before writing to `audit_logs`. Never include secrets/tokens/raw PII.
 
-### Transactions, latency, and idempotency
+### Transactions and idempotency
 
-- Append into `outbox` table in the same DB transaction as the state change; this guarantees atomicity. The outbox write uses `storeAuditOutboxMessage` from `src/server/shared/outbox/message-storage.ts`.
-- Appends are batched to minimize latency on the main path.
-- For idempotency, if calling from retryable flows, ensure a deterministic event identity upstream or let the worker handle duplicates safely when flushing.
-
-### Hash-chain and flushing (for reference)
-
-- The worker reads audit_outbox, groups events (e.g., per-tenant per-day), computes prev_hash/hash, inserts into audit_logs (append-only), then marks outbox rows done.
-- Never write audit_logs directly from request paths; only the worker writes audit_logs.
+- Prefer calling `appendAudit` in the same DB transaction as the state change.
+- Each event gets a hash chain (prev_hash/hash) computed at insert time in `append-audit.ts`.
 
 ### Testing checklist
 
 - Before/after snapshots conform to allowlist; sensitive keys are masked.
 - Context fields are present when available and safe (no secrets).
 - Success and failure events follow naming convention and carry minimal necessary detail.
-- Outbox append occurs within the same transaction and is resilient to retries.
+- Audit append occurs within the same transaction when possible.
 
 ---
 

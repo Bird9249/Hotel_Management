@@ -1,254 +1,147 @@
-# Ansible Deployment for Admin System
+# Ansible Deployment — ລະບົບຈັດການໂຮງແຮມ
 
-This Ansible setup deploys a unified API service with:
-- **Frontend**: React + Vite (served by API server)
-- **Backend**: Hono + Bun (API + static file serving)
-- **Workers**: Background workers (runs on separate port)
-- **Database**: PostgreSQL with migrations
-- **Static Files**: API server serves both frontend assets and API endpoints
+Deploy แบบ unified server ด้วย Bun:
+- **Frontend**: React 19 + TanStack Router (build → `out/dist/`)
+- **Backend**: ElysiaJS + Better Auth (compile → `out/server/main.js`)
+- **Entry**: `index.ts` — serve SPA + `/api/*`
+- **Database**: PostgreSQL + SQL migrations (รวม seed demo)
 
 ## Prerequisites
 
-### Local Machine
-- Ansible installed
-- Bun installed and in PATH
-- rsync installed
+### เครื่อง local
+- Ansible
+- Bun (ใน PATH)
+- rsync
 
-### Server
-- Ubuntu/Debian server
-- Bun installed (or Node.js if using compiled JS)
-- PostgreSQL installed
-- Nginx installed
-- rsync installed
+### เซิร์ฟเวอร์
+- Ubuntu/Debian
+- Bun (`/root/.bun/bin/bun` หรือแก้ `bun_bin` ใน `group_vars/prod.yml`)
+- PostgreSQL
+- Nginx + certbot
 
-## Setup (First Time)
+## Setup ครั้งแรก
 
-### 1. Check Requirements
+### 1. แก้ไขการตั้งค่า
 
-Run the setup playbook to check if all requirements are met:
-```bash
-ansible-playbook -i deploy/inventory/hosts.ini deploy/playbooks/setup.yml --check
-```
-
-### 2. Configure Placeholders
-
-Edit these files and replace placeholders:
-
-```bash
-# Replace these placeholders in all files:
-[[app_name]]           → admin (default: admin)
-[[api_service]]        → admin (default: admin)
-[[worker_service]]     → admin-worker (default: admin-worker)
-[[server_name]]        → admin.example.com (default: admin.example.com)
-[[api_port]]           → 3003 (default: 3003)
-[[deploy_user]]        → root (default: root)
-[[deploy_group]]       → root (default: root)
-[[server_root]]        → /opt/admin (default: /opt/admin)
-[[web_root]]           → /var/www/admin (default: /var/www/admin)
-```
-
-### 2. Update Inventory
-
-Edit `inventory/hosts.ini`:
+**`deploy/inventory/hosts.ini`**
 ```ini
 [prod]
-your-server-ip-or-dns ansible_user=deploy
+your-server-ip ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_ed25519
 ```
 
-### 3. Create Environment File
+**`deploy/group_vars/prod.yml`** — แก้ `local_repo`, `api_domain`, `ssl_email` ตามจริง
 
-Copy the example environment file:
+### 2. สร้าง database
+
 ```bash
-# On the server
-sudo cp /path/to/deploy/templates/env.example /etc/your-app-name.env
-sudo nano /etc/your-app-name.env
+sudo -u postgres psql
+CREATE DATABASE hotel_db;
+CREATE USER hotel_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE hotel_db TO hotel_user;
+\q
 ```
 
-Update the values in the file:
-```bash
-NODE_ENV=production
-PORT=3000
-WORKER_PORT=3001
-DATABASE_URL=postgresql://username:password@localhost:5432/database_name
-JWT_SECRET=your-super-secret-jwt-key-here
-CORS_ORIGIN=https://your-domain.com,http://localhost:3001
+### 3. ตั้งค่า env (copy อัตโนมัติผ่าน Ansible)
+
+แก้ `deploy/group_vars/prod.yml`:
+
+```yaml
+# ไฟล์ env บนเครื่องคุณที่จะ copy ไปเซิร์ฟเวอร์
+app_env_source: "deploy/templates/env.production"
+app_env_dest: "/etc/hotel.env"
+app_env_force: false   # true = overwrite ทุกครั้งที่ deploy
 ```
 
-Set proper permissions:
+สร้างไฟล์ต้นทาง (เช่น copy จาก template):
+
 ```bash
-sudo chmod 600 /etc/your-app-name.env
-sudo chown deploy:deploy /etc/your-app-name.env
+cp deploy/templates/env.example deploy/templates/env.production
+# แก้ค่าจริงใน env.production — อย่า commit secret ถ้าไม่ต้องการ
 ```
 
-### 4. Setup Systemd Services and Nginx
+Ansible จะ copy ไป `app_env_dest` ตอน `setup.yml` และ `deploy.yml`  
+(ถ้า `app_env_force: false` จะไม่ทับไฟล์ที่มีอยู่แล้วบนเซิร์ฟเวอร์)
 
-Run the setup playbook to create systemd services and nginx configuration:
+### 4. Setup systemd + nginx + SSL
+
 ```bash
+ansible-playbook -i deploy/inventory/hosts.ini deploy/playbooks/setup.yml --check
 ansible-playbook -i deploy/inventory/hosts.ini deploy/playbooks/setup.yml
 ```
 
-This will:
-- Create systemd service files for API and Worker
-- Create nginx site configuration
-- Enable the nginx site
-- Test nginx configuration
+## Deploy
 
-### 5. Manual Setup (Alternative)
+จาก root โปรเจกต์:
 
-Create nginx site configuration:
-```bash
-sudo nano /etc/nginx/sites-available/your-app-name
-```
-
-Copy the nginx template content and update placeholders.
-
-Enable the site:
-```bash
-sudo ln -s /etc/nginx/sites-available/your-app-name /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-## Deployment
-
-### Deploy (Build + Upload + Switch)
-
-From the monorepo root directory:
 ```bash
 ansible-playbook -i deploy/inventory/hosts.ini deploy/playbooks/deploy.yml
 ```
 
-This will:
-1. Check requirements (bun, rsync, env file, PostgreSQL)
-2. Build frontend and backend locally
-3. Upload artifacts to server
-4. Create new release directory
-5. Update symlinks atomically
-6. Run database migrations
-7. Restart services and verify they're running
-8. Clean up old releases
+Playbook จะ:
+1. ตรวจ requirements (bun, rsync, `/etc/hotel.env`, PostgreSQL)
+2. รัน `bun run build:all` บนเครื่อง local
+3. อัปโหลด release (index.ts + dist + out/server)
+4. สลับ symlink `current`
+5. รัน SQL migrations (0000 RBAC/users + 0001 demo data)
+6. restart `hotel`
+7. ลบ release เก่า (เก็บ 5 ชุด)
 
-### Rollback
+## Rollback
 
-#### Option 1: Using Rollback Script (Recommended)
 ```bash
-# On the server
-export APP_NAME=your-app-name
-export SERVER_ROOT=/home/deploy/myapp
-export API_SERVICE=your-app-api
-export WORKER_SERVICE=your-app-worker
+export APP_NAME=hotel
+export SERVER_ROOT=/opt/hotel
+export API_SERVICE=hotel
 
 ./deploy/scripts/rollback.sh
 ```
 
-#### Option 2: Manual Rollback
-```bash
-# SSH to server
-ssh deploy@your-server
-
-# List available releases
-ls -la /home/deploy/myapp/releases/
-
-# Update symlink to previous release
-sudo ln -sfn /home/deploy/myapp/releases/20241201120000 /home/deploy/myapp/current
-
-# Restart services
-sudo systemctl restart your-app-api your-app-worker
-
-# Check service status
-sudo systemctl status your-app-api your-app-worker
-```
-
-## Project Structure
+## โครงสร้างบนเซิร์ฟเวอร์
 
 ```
-deploy/
-├── inventory/
-│   └── hosts.ini              # Server inventory
-├── group_vars/
-│   └── prod.yml               # Production variables
-├── playbooks/
-│   └── deploy.yml             # Main deployment playbook
-└── roles/
-    └── app/
-        ├── tasks/
-        │   ├── main.yml       # Main task orchestrator
-        │   ├── build_local.yml # Local build tasks
-        │   ├── release_server.yml # Server release tasks
-        │   ├── migrate.yml    # Database migration tasks
-        │   └── cleanup.yml    # Cleanup old releases
-        ├── handlers/
-        │   └── main.yml       # Service restart handlers
-        └── templates/
-            ├── app-api.service.j2      # API systemd service
-            ├── app-worker.service.j2   # Worker systemd service
-            └── nginx-app.conf.j2       # Nginx configuration
-```
-
-## Server Directory Structure
-
-```
-/opt/admin/
+/opt/hotel/
+├── current -> releases/1739.../
 ├── releases/
-│   ├── 20241201120000/
-│   │   └── server/
-│   │       ├── dist/          # Built server code
-│   │       ├── public/        # Static files (symlinked)
-│   │       ├── index.ts       # Server entry point
-│   │       └── worker.ts      # Worker entry point
-│   └── 20241201130000/        # Previous release
-├── current -> releases/20241201120000/  # Current release symlink
+│   └── 1739.../
+│       ├── index.ts
+│       ├── dist/              # frontend
+│       └── out/server/main.js
 └── shared/
-    ├── migrations/            # SQL migration files
-    └── uploads/               # User uploads (persistent)
+    ├── migrations/            # *.sql
+    └── uploads/
+        └── avatars/
 ```
 
-## Environment Variables
+## Environment variables
 
-Required environment variables in `/etc/admin.env`:
+ดู `deploy/templates/env.example` — ต้องมีอย่างน้อย:
 
-- `NODE_ENV=production`
-- `PORT=3003` (API port)
-- `WORKER_PORT=3004` (Worker port)
-- `DATABASE_URL=postgresql://admin_user:password@localhost:5432/admin_db`
-- `BETTER_AUTH_SECRET=your-secret-key`
-- `CORS_ORIGIN=https://admin.example.com`
+| ตัวแปร | ตัวอย่าง |
+|--------|----------|
+| `DATABASE_URL` | `postgresql://hotel_user:...@localhost:5432/hotel_db` |
+| `BETTER_AUTH_SECRET` | random secret |
+| `BETTER_AUTH_BASE_URL` | `https://hotel.example.com` |
+| `CORS_ORIGIN` | `https://hotel.example.com` |
+| `PORT` | `3000` |
 
 ## Troubleshooting
 
-### Check Service Status
 ```bash
-sudo systemctl status admin
-sudo systemctl status admin-worker
+sudo systemctl status hotel nginx
+sudo journalctl -u hotel -f
+curl -s https://hotel.example.com/api/health
 ```
 
-### View Logs
+### Migration แยก
+
 ```bash
-sudo journalctl -u admin -f
-sudo journalctl -u admin-worker -f
+ansible-playbook -i deploy/inventory/hosts.ini deploy/playbooks/migrate.yml
 ```
 
-### Check Nginx
-```bash
-sudo nginx -t
-sudo systemctl status nginx
-```
+## บัญชี demo (หลัง migrate)
 
-### Manual Migration
-```bash
-# SSH to server
-ssh deploy@your-server
-
-# Run migrations manually
-cd /home/deploy/myapp/current/server
-sudo -u postgres psql -d "$(grep DATABASE_URL /etc/your-app-name.env | cut -d= -f2)" -f /home/deploy/myapp/shared/migrations/your-migration.sql
-```
-
-## Notes
-
-- The deployment is atomic - symlinks are updated after successful upload
-- Old releases are automatically cleaned up (keeps last 5)
-- Migrations are idempotent - only new files are applied
-- Static files are served by Nginx for better performance
-- API and Worker run as separate systemd services
-- All services restart automatically after deployment
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@admin.com | 123456 |
+| Receptionist | receptionist@admin.com | 123456 |
+| Housekeeping | housekeeping@admin.com | 123456 |

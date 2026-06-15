@@ -1,59 +1,53 @@
-- name: Ensure bun available for local build (document)
+- name: Ensure bun available for local build
   debug:
     msg: "Requires bun on localhost in PATH; install from https://bun.sh if missing"
 
-- name: Assert server dist exists
+- name: Run production build (frontend + API)
   delegate_to: localhost
   run_once: true
   become: false
-  stat: { path: "{{ local_server_dist }}" }
-  register: server_dist
+  command: bun run build:all
+  args:
+    chdir: "{{ local_repo }}"
 
-- name: Fail if server dist missing
+- name: Assert production entrypoint exists
   delegate_to: localhost
   run_once: true
   become: false
-  fail: { msg: "out/ missing - build failed" }
-  when: not server_dist.stat.exists
-
-- name: Check if index.ts exists in server dist
-  delegate_to: localhost
-  run_once: true
-  become: false
-  stat: { path: "{{ local_server_dist }}/index.ts" }
-  register: index_ts
+  stat: { path: "{{ local_entrypoint }}" }
+  register: entrypoint_file
 
 - name: Fail if index.ts missing
   delegate_to: localhost
   run_once: true
   become: false
-  fail: { msg: "out/index.ts missing - build failed" }
-  when: not index_ts.stat.exists
+  fail: { msg: "index.ts missing at repo root — build/deploy setup error" }
+  when: not entrypoint_file.stat.exists
 
-- name: Check if worker.ts exists in server dist
+- name: Assert compiled API exists
   delegate_to: localhost
   run_once: true
   become: false
-  stat: { path: "{{ local_server_dist }}/worker.ts" }
-  register: worker_ts
+  stat: { path: "{{ local_api_dist }}/main.js" }
+  register: api_bundle
 
-- name: Fail if worker.ts missing
+- name: Fail if compiled API missing
   delegate_to: localhost
   run_once: true
   become: false
-  fail: { msg: "out/worker.ts missing - build failed" }
-  when: not worker_ts.stat.exists
+  fail: { msg: "out/server/main.js missing — run `bun run build:all` failed" }
+  when: not api_bundle.stat.exists
 
 - name: Assert frontend dist exists
   delegate_to: localhost
   run_once: true
   become: false
-  stat: { path: "{{ local_repo }}/out/dist" }
+  stat: { path: "{{ local_frontend_dist }}" }
   register: frontend_dist
 
 - name: Fail if frontend dist missing
   delegate_to: localhost
   run_once: true
   become: false
-  fail: { msg: "out/dist missing - build failed" }
+  fail: { msg: "out/dist missing — run `bun run build:all` failed" }
   when: not frontend_dist.stat.exists

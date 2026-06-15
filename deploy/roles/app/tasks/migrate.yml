@@ -26,7 +26,7 @@
   when: sql_dir.stat.exists
   shell: |
     set -e
-    DBURL="$(awk -F= '/^DATABASE_URL=/{print $2}' /etc/{{ app_name }}.env)"
+    DBURL="$(awk -F= '/^DATABASE_URL=/{print $2}' {{ app_env_dest }})"
     DB_NAME=$(echo "$DBURL" | sed 's|.*/\([^?]*\).*|\1|')
 
     echo "Database URL: $DBURL"

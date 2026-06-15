@@ -1,3 +1,4 @@
+- import_tasks: sync_env.yml
 - name: Check if bun is installed
   command: which bun
   register: bun_check
@@ -19,16 +20,6 @@
   fail:
     msg: "rsync is not installed. Please install rsync: apt-get install rsync"
   when: rsync_check.rc != 0
-
-- name: Check if environment file exists
-  stat:
-    path: "/etc/{{ app_name }}.env"
-  register: env_file
-
-- name: Fail if environment file does not exist
-  fail:
-    msg: "Environment file /etc/{{ app_name }}.env does not exist. Please create it first."
-  when: not env_file.stat.exists
 
 - name: Check if PostgreSQL is running
   systemd:

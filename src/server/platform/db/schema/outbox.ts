@@ -9,8 +9,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-// Schema for pg-transactional-outbox
-// This matches the schema expected by pg-transactional-outbox library
+// Legacy outbox table (reserved — audit writes directly to audit_logs)
 export const outbox = pgTable(
   "outbox",
   {

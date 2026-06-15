@@ -1,3 +1,4 @@
+import { env } from "@/server/platform/config";
 import { cors } from "@elysiajs/cors";
 import { staticPlugin } from "@elysiajs/static";
 import { existsSync } from "node:fs";
@@ -100,5 +101,8 @@ export function createServer() {
       },
     )
     .use(createRestRoutes())
-    .get("/health", () => ({ ok: true }));
+    .get("/health", () => ({
+      ok: true,
+      devLoginEnabled: env.NODE_ENV === "development",
+    }));
 }

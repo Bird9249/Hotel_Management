@@ -1,14 +1,13 @@
 [Unit]
-Description={{ app_name }} API (Bun/Hono)
+Description={{ app_name }} — Hotel Management API (Bun + Elysia)
 After=network.target
 
 [Service]
 User={{ app_user }}
 Group={{ app_group }}
 WorkingDirectory={{ server_current }}
-EnvironmentFile=/etc/{{ app_name }}.env
-ExecStart=/root/.bun/bin/bun ./index.ts
-Environment=NODE_ENV=production
+EnvironmentFile={{ app_env_dest }}
+ExecStart={{ bun_bin }} ./index.ts
 Restart=always
 RestartSec=3
 

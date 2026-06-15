@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1781156380978,
-      "tag": "0000_thick_amazoness",
+      "when": 1781506974455,
+      "tag": "0000_happy_celestials",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1781178377545,
-      "tag": "0001_sad_skullbuster",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1781231367970,
-      "tag": "0002_faithful_microbe",
+      "when": 1781506974456,
+      "tag": "0001_demo_seed",
       "breakpoints": true
     }
   ]

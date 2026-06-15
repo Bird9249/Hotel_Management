@@ -6,9 +6,8 @@ After=network.target
 User={{ app_user }}
 Group={{ app_group }}
 WorkingDirectory={{ server_current }}/server
-EnvironmentFile=/etc/{{ app_name }}.env
+EnvironmentFile={{ app_env_dest }}
 ExecStart=/root/.bun/bin/bun ./dist/main.js
-Environment=NODE_ENV=production
 Restart=always
 RestartSec=3
 

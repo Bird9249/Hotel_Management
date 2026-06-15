@@ -68,7 +68,6 @@
 | **Database** | PostgreSQL ผ่าน Drizzle ORM (+ drizzle-kit migrations) |
 | **Auth** | Better Auth |
 | **Charts** | Recharts (ใช้ในรายงาน) |
-| **Async/Jobs** | pg-transactional-outbox (worker) |
 | **Storage** | AWS S3 (อัปโหลดไฟล์/เอกสาร) |
 
 ### โครงสร้างของแต่ละโมดูล (Module Convention)

@@ -1,0 +1,58 @@
+- name: Resolve app env source path
+  set_fact:
+    app_env_source_resolved: >-
+      {{
+        app_env_source
+        if (app_env_source is match('^/'))
+        else (local_repo ~ '/' ~ app_env_source)
+      }}
+  when: app_env_source is defined and app_env_source | length > 0
+
+- name: Check local env source exists (controller)
+  delegate_to: localhost
+  run_once: true
+  become: false
+  stat:
+    path: "{{ app_env_source_resolved }}"
+  register: local_env_stat
+  when: app_env_source is defined and app_env_source | length > 0
+
+- name: Fail if app_env_source is set but file missing locally
+  fail:
+    msg: >-
+      app_env_source={{ app_env_source }} not found at {{ app_env_source_resolved }}.
+      Create the file or update group_vars/prod.yml.
+  when:
+    - app_env_source is defined
+    - app_env_source | length > 0
+    - not local_env_stat.stat.exists
+
+- name: Check if env file exists on server
+  stat:
+    path: "{{ app_env_dest }}"
+  register: remote_env_stat
+
+- name: Copy env file to server
+  copy:
+    src: "{{ app_env_source_resolved }}"
+    dest: "{{ app_env_dest }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  when:
+    - app_env_source is defined
+    - app_env_source | length > 0
+    - local_env_stat.stat.exists
+    - app_env_force | bool or not remote_env_stat.stat.exists
+
+- name: Re-check env file on server after copy
+  stat:
+    path: "{{ app_env_dest }}"
+  register: remote_env_final
+
+- name: Fail if environment file does not exist on server
+  fail:
+    msg: >-
+      {{ app_env_dest }} not found. Set app_env_source in group_vars/prod.yml
+      (e.g. deploy/templates/env.production) or create the file on the server manually.
+  when: not remote_env_final.stat.exists

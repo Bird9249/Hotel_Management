@@ -1,4 +1,4 @@
-- name: Deploy API server only
+- name: Deploy Hotel Management System
   hosts: prod
   become: true
   vars_files:
@@ -17,73 +17,7 @@
         - "{{ server_releases }}"
         - "{{ server_shared }}"
         - "{{ server_shared }}/uploads"
-        - "{{ server_shared }}/uploads/media"
+        - "{{ server_shared }}/uploads/avatars"
+        - "{{ server_shared }}/migrations"
   tasks:
-    - name: Assert server dist exists
-      run_once: true
-      delegate_to: localhost
-      become: false
-      stat: { path: "{{ local_server_dist }}" }
-      register: server_dist
-
-    - name: Fail if server dist missing
-      run_once: true
-      delegate_to: localhost
-      become: false
-      fail: { msg: "out/ missing - build failed" }
-      when: not server_dist.stat.exists
-
-    - name: Check if index.ts exists in server dist
-      run_once: true
-      delegate_to: localhost
-      become: false
-      stat: { path: "{{ local_server_dist }}/index.ts" }
-      register: index_ts
-
-    - name: Fail if index.ts missing
-      run_once: true
-      delegate_to: localhost
-      become: false
-      fail: { msg: "out/index.ts missing - build failed" }
-      when: not index_ts.stat.exists
-
-    - name: Check if worker.ts exists in server dist
-      run_once: true
-      delegate_to: localhost
-      become: false
-      stat: { path: "{{ local_server_dist }}/worker/worker.js" }
-      register: worker_ts
-
-    - name: Fail if worker.ts missing
-      run_once: true
-      delegate_to: localhost
-      become: false
-      fail: { msg: "out/worker.ts missing - build failed" }
-      when: not worker_ts.stat.exists
-
-    - name: Assert frontend dist exists
-      run_once: true
-      delegate_to: localhost
-      become: false
-      stat: { path: "{{ local_repo }}/out/dist" }
-      register: frontend_dist
-
-    - name: Fail if frontend dist missing
-      run_once: true
-      delegate_to: localhost
-      become: false
-      fail: { msg: "out/dist missing - build failed" }
-      when: not frontend_dist.stat.exists
-
-    - name: Include deploy unified tasks
-      include_tasks: ../roles/app/tasks/release_unified.yml
-
-    - name: Prune old server releases
-      shell: |
-        cd {{ server_releases }}
-        ls -1t | tail -n +{{ (keep_releases + 1) | int }} | xargs -r rm -rf
-      changed_when: false
-      failed_when: false
-
-
-
+    - import_tasks: ../roles/app/tasks/main.yml

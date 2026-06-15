@@ -6,6 +6,8 @@
   vars:
     ansible_roles_path: ../roles
   tasks:
+    - import_tasks: ../roles/app/tasks/sync_env.yml
+
     - name: Create systemd service files
       template:
         src: "{{ item }}.j2"
@@ -15,7 +17,6 @@
         mode: "0644"
       loop:
         - "[[app_name]].service"
-        - "[[app_name]]-worker.service"
       notify:
         - daemon-reload
 
