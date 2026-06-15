@@ -20,12 +20,20 @@ import {
   useSalesByShiftQuery,
   useShiftReconciliationQuery,
 } from "../api/queries";
+import {
+  exportDailyCashCsv,
+  exportDailySalesCsv,
+  exportOccupancyCsv,
+  exportSalesByShiftCsv,
+  exportShiftReconciliationCsv,
+} from "../lib/export-csv";
 import { DailyCashReport } from "../ui/DailyCashReport";
 import {
   DateRangePicker,
   dateRangeToParams,
   defaultReportDateRange,
 } from "../ui/DateRangePicker";
+import { ExportCsvButton } from "../ui/ExportCsvButton";
 import { OccupancyChart } from "../ui/OccupancyChart";
 import { SalesByShiftTable } from "../ui/SalesByShiftTable";
 import { SalesChart } from "../ui/SalesChart";
@@ -127,11 +135,24 @@ export function ReportsPage() {
           </TabsList>
 
           <TabsContent value="sales" className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <StatCard
-                label="ລາຍຮັບລວມໃນຊ່ວງ"
-                value={`${formatMoney(salesTotal)} ₭`}
-                hint={rangeLabel || undefined}
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="ລາຍຮັບລວມໃນຊ່ວງ"
+                  value={`${formatMoney(salesTotal)} ₭`}
+                  hint={rangeLabel || undefined}
+                />
+              </div>
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  sales.isLoading ||
+                  !sales.data ||
+                  sales.data.length === 0
+                }
+                onExport={() => {
+                  if (params && sales.data) exportDailySalesCsv(sales.data, params);
+                }}
               />
             </div>
             {sales.isLoading ? (
@@ -147,11 +168,26 @@ export function ReportsPage() {
           </TabsContent>
 
           <TabsContent value="occupancy" className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <StatCard
-                label="ອັດຕາເຂົ້າພັກເຊື່ອມ"
-                value={`${avgOccupancy}%`}
-                hint="ຄ່າສະເລ່ຍຕໍ່ວັນໃນຊ່ວງທີ່ເລືອກ"
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="ອັດຕາເຂົ້າພັກເຊື່ອມ"
+                  value={`${avgOccupancy}%`}
+                  hint="ຄ່າສະເລ່ຍຕໍ່ວັນໃນຊ່ວງທີ່ເລືອກ"
+                />
+              </div>
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  occupancy.isLoading ||
+                  !occupancy.data ||
+                  occupancy.data.length === 0
+                }
+                onExport={() => {
+                  if (params && occupancy.data) {
+                    exportOccupancyCsv(occupancy.data, params);
+                  }
+                }}
               />
             </div>
             {occupancy.isLoading ? (
@@ -167,16 +203,34 @@ export function ReportsPage() {
           </TabsContent>
 
           <TabsContent value="shift-reconciliation" className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <StatCard
-                label="ຈຳນວນກະໃນຊ່ວງ"
-                value={String(cashStats.shiftCount)}
-                hint={rangeLabel || undefined}
-              />
-              <StatCard
-                label="ຜົນຕ່າງເງິນສົດລວມ"
-                value={`${formatMoney(cashStats.totalVariance)} ₭`}
-                hint="ຈາກກະທີ່ປິດແລ້ວ"
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="ຈຳນວນກະໃນຊ່ວງ"
+                  value={String(cashStats.shiftCount)}
+                  hint={rangeLabel || undefined}
+                />
+                <StatCard
+                  label="ຜົນຕ່າງເງິນສົດລວມ"
+                  value={`${formatMoney(cashStats.totalVariance)} ₭`}
+                  hint="ຈາກກະທີ່ປິດແລ້ວ"
+                />
+              </div>
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  shiftReconciliation.isLoading ||
+                  !shiftReconciliation.data ||
+                  shiftReconciliation.data.length === 0
+                }
+                onExport={() => {
+                  if (params && shiftReconciliation.data) {
+                    exportShiftReconciliationCsv(
+                      shiftReconciliation.data,
+                      params,
+                    );
+                  }
+                }}
               />
             </div>
             {shiftReconciliation.isLoading ? (
@@ -193,11 +247,26 @@ export function ReportsPage() {
           </TabsContent>
 
           <TabsContent value="sales-by-shift" className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <StatCard
-                label="ຍອດຂາຍຕາມກະລວມ"
-                value={`${formatMoney(cashStats.shiftSalesTotal)} ₭`}
-                hint={rangeLabel || undefined}
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="ຍອດຂາຍຕາມກະລວມ"
+                  value={`${formatMoney(cashStats.shiftSalesTotal)} ₭`}
+                  hint={rangeLabel || undefined}
+                />
+              </div>
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  salesByShift.isLoading ||
+                  !salesByShift.data ||
+                  salesByShift.data.length === 0
+                }
+                onExport={() => {
+                  if (params && salesByShift.data) {
+                    exportSalesByShiftCsv(salesByShift.data, params);
+                  }
+                }}
               />
             </div>
             {salesByShift.isLoading ? (
@@ -213,6 +282,21 @@ export function ReportsPage() {
           </TabsContent>
 
           <TabsContent value="daily-cash" className="flex flex-col gap-4">
+            <div className="flex justify-end">
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  dailyCash.isLoading ||
+                  !dailyCash.data ||
+                  dailyCash.data.length === 0
+                }
+                onExport={() => {
+                  if (params && dailyCash.data) {
+                    exportDailyCashCsv(dailyCash.data, params);
+                  }
+                }}
+              />
+            </div>
             {dailyCash.isLoading ? (
               <ReportLoadingSkeleton />
             ) : dailyCash.data && dailyCash.data.length > 0 ? (
