@@ -103,7 +103,7 @@ src/modules/<module>/
 | `dashboard` | ✅ พร้อม | หน้าแดชบอร์ดกลาง |
 
 > โมดูลใหม่ที่ต้องสร้างสำหรับ MVP โรงแรม: `rooms`, `reservations`, `guests`, `billing`, `reports`
-> รายละเอียดดูใน [`MODULE_ROADMAP.md`](./MODULE_ROADMAP.md)
+> รายละเอียดดูใน [`mvp/MODULE_ROADMAP.md`](./mvp/MODULE_ROADMAP.md)
 
 ---
 
@@ -123,9 +123,16 @@ MVP ถือว่าสำเร็จเมื่อสามารถทำ 
 
 ## 7. นอกขอบเขต MVP (Out of Scope)
 
-เพื่อรักษาขนาดของ MVP รายการต่อไปนี้ "ยังไม่ทำ" ในเฟสแรก:
+เพื่อรักษาขนาดของ MVP รายการต่อไปนี้ "ยังไม่ทำ" ในเฟสแรก — **มีแผน Post-MVP แล้ว** สำหรับรายการที่ทำต่อใน Phase 2:
 
-- Online Booking / Channel Manager (เชื่อม OTA เช่น Agoda, Booking.com)
+| ฟีเจอร์ | สถานะ MVP | แผนถัดไป |
+|---------|-----------|-----------|
+| Online Booking / Channel Manager (Agoda, Booking.com, Expedia) | นอก MVP | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) · [`phase-2/implementation/PHASE_2_CHANNEL_OPS.md`](./phase-2/implementation/PHASE_2_CHANNEL_OPS.md) |
+| Direct Booking (เว็บ/โซเชียลโรงแรม) | นอก MVP | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) § Booking Engine |
+| Housekeeping Mobile + กะแม่บ้าน | นอก MVP (MVP มี HK desktop อย่างเดียว) | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) § HK Shift / Mobile |
+
+**ยังไม่มีแผน (Post-MVP Phase 3+):**
+
 - Payment Gateway online แบบเชื่อม API ธนาคารโดยตรง
 - ระบบสมาชิก/สะสมแต้ม (Loyalty)
 - POS ร้านอาหาร / Mini-bar แบบละเอียด

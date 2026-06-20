@@ -1,7 +1,7 @@
 # Implementation Plans — ระบบจัดการโรงแรม (MVP)
 
 แผนการ implement แบบลงรายละเอียด แยกตามแต่ละ Phase
-อ้างอิงภาพรวมจาก [`../PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md) และลำดับงานจาก [`../MODULE_ROADMAP.md`](../MODULE_ROADMAP.md)
+อ้างอิงภาพรวมจาก [`../../PROJECT_OVERVIEW.md`](../../PROJECT_OVERVIEW.md) และลำดับงานจาก [`../MODULE_ROADMAP.md`](../MODULE_ROADMAP.md)
 
 ## รายการแผนแต่ละ Phase
 
@@ -14,6 +14,8 @@
 | 4 | [`PHASE_4_BILLING.md`](./PHASE_4_BILLING.md) | โมดูล `billing` — Invoice + Payment + Tax |
 | 5 | [`PHASE_5_REPORTING.md`](./PHASE_5_REPORTING.md) | โมดูล `reports` — Daily Sales + Occupancy Rate |
 | 6 | [`PHASE_6_CASH_SHIFT.md`](./PHASE_6_CASH_SHIFT.md) | ກະເງິນສົດ Reception — Open/Close Shift + Opening Cash + สรุปส่งมอบ |
+
+> Phase 2 (Post-MVP): [`../../phase-2/ROADMAP.md`](../../phase-2/ROADMAP.md)
 
 ---
 

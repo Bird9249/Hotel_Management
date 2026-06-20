@@ -1,7 +1,7 @@
 # Module Roadmap — ระบบจัดการโรงแรม (MVP)
 
 > แผนการพัฒนาแบบแบ่งเป็นโมดูลและเฟส (Phase) เรียงตามลำดับการพึ่งพา (dependency)
-> อ้างอิงภาพรวมจาก [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md)
+> อ้างอิงภาพรวมจาก [`../PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md)
 
 สัญลักษณ์สถานะ: ✅ พร้อมแล้ว · 🚧 กำลังทำ · ⬜ ยังไม่เริ่ม
 
@@ -225,3 +225,9 @@ Phase 5  Reporting (sales / occupancy)            ✅
 - [x] Demo seed — migration `0001_demo_seed.sql` + scripts `seed:hotel` / `seed:billing`
 - [x] Deploy — Ansible (`deploy/`) + env sync
 - [x] Dev quick login — แสดงเมื่อ server `NODE_ENV=development`
+
+---
+
+## ต่อไป — Phase 2 (Post-MVP)
+
+> แผน Channel Management & Operations อยู่ใน [`../phase-2/ROADMAP.md`](../phase-2/ROADMAP.md)
