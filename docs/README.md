@@ -8,14 +8,18 @@
 
 ```
 docs/
-├── PROJECT_OVERVIEW.md      # ภาพรวม + tech stack + Definition of Done (MVP)
-├── mvp/                     # MVP — Phase 0–6 (เสร็จแล้ว)
+├── PROJECT_OVERVIEW.md
+├── mvp/                          # MVP Phase 0–6
 │   ├── MODULE_ROADMAP.md
 │   ├── DEMO_VIDEO_PLAN.md
-│   └── implementation/      # แผน implement ละเอียด Phase 0–6
-└── phase-2/                 # Post-MVP Phase 2 — Channel & Operations
+│   └── implementation/
+│       ├── README.md
+│       └── PHASE_0 … PHASE_6
+└── phase-2/                      # Post-MVP Phase 2
     ├── ROADMAP.md
-    └── implementation/      # แผน implement ละเอียด Phase 2
+    └── implementation/
+        ├── README.md
+        └── PHASE_2_0 … PHASE_2_4
 ```
 
 ---
@@ -32,8 +36,13 @@ docs/
 
 ## Phase 2 — Channel Management & Operations
 
-| เอกสาร | เนื้อหา |
-|--------|---------|
-| [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) | Roadmap Post-MVP Phase 2 |
-| [`phase-2/implementation/README.md`](./phase-2/implementation/README.md) | Index แผน implement Phase 2 |
-| [`phase-2/implementation/PHASE_2_CHANNEL_OPS.md`](./phase-2/implementation/PHASE_2_CHANNEL_OPS.md) | OTA · Direct Booking · HK Mobile · HK Shift |
+| Sub-phase | เอกสาร | ขอบเขต |
+|-----------|--------|--------|
+| — | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) | Roadmap + DoD รวม |
+| 2.0 | [`PHASE_2_0_FOUNDATION.md`](./phase-2/implementation/PHASE_2_0_FOUNDATION.md) | Inventory + `channels` |
+| 2.1 | [`PHASE_2_1_HK_SHIFT.md`](./phase-2/implementation/PHASE_2_1_HK_SHIFT.md) | ກະແມ່ບ້ານ |
+| 2.2 | [`PHASE_2_2_HK_MOBILE.md`](./phase-2/implementation/PHASE_2_2_HK_MOBILE.md) | PWA mobile |
+| 2.3 | [`PHASE_2_3_BOOKING_ENGINE.md`](./phase-2/implementation/PHASE_2_3_BOOKING_ENGINE.md) | Direct Booking |
+| 2.4 | [`PHASE_2_4_CHANNEL_MANAGER.md`](./phase-2/implementation/PHASE_2_4_CHANNEL_MANAGER.md) | OTA sync |
+
+Index: [`phase-2/implementation/README.md`](./phase-2/implementation/README.md)

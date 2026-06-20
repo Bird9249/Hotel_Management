@@ -127,9 +127,9 @@ MVP ถือว่าสำเร็จเมื่อสามารถทำ 
 
 | ฟีเจอร์ | สถานะ MVP | แผนถัดไป |
 |---------|-----------|-----------|
-| Online Booking / Channel Manager (Agoda, Booking.com, Expedia) | นอก MVP | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) · [`phase-2/implementation/PHASE_2_CHANNEL_OPS.md`](./phase-2/implementation/PHASE_2_CHANNEL_OPS.md) |
-| Direct Booking (เว็บ/โซเชียลโรงแรม) | นอก MVP | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) § Booking Engine |
-| Housekeeping Mobile + กะแม่บ้าน | นอก MVP (MVP มี HK desktop อย่างเดียว) | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) § HK Shift / Mobile |
+| Online Booking / Channel Manager (Agoda, Booking.com, Expedia) | นอก MVP | [`phase-2/ROADMAP.md`](./phase-2/ROADMAP.md) · [`phase-2/implementation/PHASE_2_4_CHANNEL_MANAGER.md`](./phase-2/implementation/PHASE_2_4_CHANNEL_MANAGER.md) |
+| Direct Booking (เว็บ/โซเชียลโรงแรม) | นอก MVP | [`phase-2/implementation/PHASE_2_3_BOOKING_ENGINE.md`](./phase-2/implementation/PHASE_2_3_BOOKING_ENGINE.md) |
+| Housekeeping Mobile + กะแม่บ้าน | นอก MVP | [`phase-2/implementation/PHASE_2_1_HK_SHIFT.md`](./phase-2/implementation/PHASE_2_1_HK_SHIFT.md) · [`phase-2/implementation/PHASE_2_2_HK_MOBILE.md`](./phase-2/implementation/PHASE_2_2_HK_MOBILE.md) |
 
 **ยังไม่มีแผน (Post-MVP Phase 3+):**
 
