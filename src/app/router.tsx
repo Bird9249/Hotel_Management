@@ -1,5 +1,3 @@
-import { RequirePermissions } from "@/modules/auth/presentation/ui/RequirePermissions";
-import { LazyPage } from "@/shared/ui/LazyPage";
 import {
   createRootRoute,
   createRoute,
@@ -7,6 +5,8 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { lazy } from "react";
+import { RequirePermissions } from "@/modules/auth/presentation/ui/RequirePermissions";
+import { LazyPage } from "@/shared/ui/LazyPage";
 
 const RootLayout = lazy(() =>
   import("./layout/RootLayout").then((module) => ({
@@ -182,6 +182,13 @@ const HousekeepingPage = lazy(() =>
     }),
   ),
 );
+const HkShiftsPage = lazy(() =>
+  import("@/modules/housekeeping/presentation/pages/HkShiftsPage").then(
+    (module) => ({
+      default: module.HkShiftsPage,
+    }),
+  ),
+);
 const InvoicesPage = lazy(() =>
   import("@/modules/billing/presentation/pages/InvoicesPage").then(
     (module) => ({
@@ -207,6 +214,13 @@ const ReportsPage = lazy(() =>
   import("@/modules/reports/presentation/pages/ReportsPage").then((module) => ({
     default: module.ReportsPage,
   })),
+);
+const ChannelsSettingsPage = lazy(() =>
+  import("@/modules/channels/presentation/pages/ChannelsSettingsPage").then(
+    (module) => ({
+      default: module.ChannelsSettingsPage,
+    }),
+  ),
 );
 const PublicVerifyLayout = lazy(() =>
   import("./layout/PublicVerifyLayout").then((module) => ({
@@ -541,9 +555,21 @@ const housekeepingRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/housekeeping",
   component: () => (
-    <RequirePermissions all={["rooms:read", "rooms:status"]}>
+    <RequirePermissions all={["rooms:read", "housekeeping:read"]}>
       <LazyPage>
         <HousekeepingPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const hkShiftsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/hk-shifts",
+  component: () => (
+    <RequirePermissions all={["housekeeping:read"]}>
+      <LazyPage>
+        <HkShiftsPage />
       </LazyPage>
     </RequirePermissions>
   ),
@@ -592,6 +618,18 @@ const reportsRoute = createRoute({
     <RequirePermissions all={["reports:read"]}>
       <LazyPage>
         <ReportsPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const channelsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/channels",
+  component: () => (
+    <RequirePermissions all={["channels:read"]}>
+      <LazyPage>
+        <ChannelsSettingsPage />
       </LazyPage>
     </RequirePermissions>
   ),
@@ -654,10 +692,12 @@ export const routeTree = rootRoute.addChildren([
     calendarRoute,
     frontDeskRoute,
     housekeepingRoute,
+    hkShiftsRoute,
     invoicesRoute,
     invoiceDetailRoute,
     cashShiftsRoute,
     reportsRoute,
+    channelsRoute,
   ]),
   forbiddenRoute,
 ]);

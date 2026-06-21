@@ -1,11 +1,20 @@
 #!/usr/bin/env bun
 
-import { addDays, format } from "date-fns";
+import { addDays, format, subHours } from "date-fns";
+import { eq } from "drizzle-orm";
 import { db } from "@/server/platform/db/client";
+import { user } from "@/server/platform/db/schema/auth";
+import {
+  channelRoomMapping,
+  salesChannel,
+} from "@/server/platform/db/schema/channels";
 import { guest } from "@/server/platform/db/schema/hotel-guests";
+import { hkRoomTask, hkShift } from "@/server/platform/db/schema/housekeeping";
+import { userRole } from "@/server/platform/db/schema/rbac";
 import { reservation } from "@/server/platform/db/schema/reservations";
 import { room, roomType } from "@/server/platform/db/schema/rooms";
 import { logger } from "@/server/platform/observability/logger";
+import type { DbTransaction } from "@/shared/types";
 import { clearDemoSeedData, DEMO_PREFIX } from "./demo-seed-shared";
 
 function isoDate(date: Date) {
@@ -33,6 +42,75 @@ const DEMO_ROOM_TYPES = [
     description: "ຫ້ອງຊຸດພິເສດ ມີຫ້ອງນັ່ງລິວິງ ແລະ ອ່າງອາບນ້ຳ",
     basePrice: "1200000",
     capacity: 4,
+  },
+] as const;
+
+const DEMO_CHANNELS = [
+  {
+    id: "channel_direct_web",
+    code: "direct_web",
+    name: "Direct Booking",
+    isActive: true,
+    config: {},
+  },
+  {
+    id: "channel_agoda",
+    code: "agoda",
+    name: "Agoda",
+    isActive: false,
+    config: {},
+  },
+  {
+    id: "channel_booking_com",
+    code: "booking_com",
+    name: "Booking.com",
+    isActive: false,
+    config: {},
+  },
+  {
+    id: "channel_expedia",
+    code: "expedia",
+    name: "Expedia",
+    isActive: false,
+    config: {},
+  },
+] as const;
+
+const DEMO_CHANNEL_MAPPINGS = [
+  {
+    id: `${DEMO_PREFIX}mapping-direct-standard`,
+    channelId: "channel_direct_web",
+    roomTypeId: `${DEMO_PREFIX}room-type-standard`,
+    externalRoomTypeId: "direct-standard",
+    allotment: null,
+  },
+  {
+    id: `${DEMO_PREFIX}mapping-direct-deluxe`,
+    channelId: "channel_direct_web",
+    roomTypeId: `${DEMO_PREFIX}room-type-deluxe`,
+    externalRoomTypeId: "direct-deluxe",
+    allotment: null,
+  },
+  {
+    id: `${DEMO_PREFIX}mapping-direct-suite`,
+    channelId: "channel_direct_web",
+    roomTypeId: `${DEMO_PREFIX}room-type-suite`,
+    externalRoomTypeId: "direct-suite",
+    allotment: null,
+  },
+  {
+    id: `${DEMO_PREFIX}mapping-agoda-deluxe`,
+    channelId: "channel_agoda",
+    roomTypeId: `${DEMO_PREFIX}room-type-deluxe`,
+    externalRoomTypeId: "AGD-DLX-001",
+    allotment: 1,
+  },
+  {
+    id: `${DEMO_PREFIX}mapping-booking-standard`,
+    channelId: "channel_booking_com",
+    roomTypeId: `${DEMO_PREFIX}room-type-standard`,
+    externalRoomTypeId: "BDC-STD-001",
+    allotment: 1,
   },
 ] as const;
 
@@ -88,6 +166,32 @@ const DEMO_ROOMS = [
   },
 ] as const;
 
+const DEMO_HK_SHIFT_ID = `${DEMO_PREFIX}hk-shift-open`;
+
+async function getDemoHousekeepingUserId(client: DbTransaction) {
+  const [housekeepingUser] = await client
+    .select({ id: user.id })
+    .from(user)
+    .innerJoin(userRole, eq(userRole.userId, user.id))
+    .where(eq(userRole.roleId, "housekeeping"))
+    .limit(1);
+  if (housekeepingUser?.id) return housekeepingUser.id;
+
+  const [adminUser] = await client
+    .select({ id: user.id })
+    .from(user)
+    .innerJoin(userRole, eq(userRole.userId, user.id))
+    .where(eq(userRole.roleId, "admin"))
+    .limit(1);
+  if (adminUser?.id) return adminUser.id;
+
+  const [fallbackUser] = await client
+    .select({ id: user.id })
+    .from(user)
+    .limit(1);
+  return fallbackUser?.id ?? null;
+}
+
 const DEMO_GUESTS = [
   {
     id: `${DEMO_PREFIX}guest-somchai`,
@@ -136,6 +240,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, 5)),
       guestsCount: 2,
       status: "booked",
+      source: "direct_web",
+      channelId: "channel_direct_web",
+      externalBookingId: `${DEMO_PREFIX}direct-101-upcoming`,
     },
     {
       id: `${DEMO_PREFIX}res-102-stay`,
@@ -145,6 +252,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(today),
       guestsCount: 1,
       status: "checked_in",
+      source: "front_desk",
+      channelId: null,
+      externalBookingId: null,
     },
     {
       id: `${DEMO_PREFIX}res-103-booked`,
@@ -154,6 +264,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, 10)),
       guestsCount: 2,
       status: "booked",
+      source: "agoda",
+      channelId: "channel_agoda",
+      externalBookingId: `${DEMO_PREFIX}agoda-103-booked`,
     },
     {
       id: `${DEMO_PREFIX}res-201-booked`,
@@ -163,6 +276,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, 3)),
       guestsCount: 3,
       status: "booked",
+      source: "booking_com",
+      channelId: "channel_booking_com",
+      externalBookingId: `${DEMO_PREFIX}booking-201-booked`,
     },
     {
       id: `${DEMO_PREFIX}res-202-suite`,
@@ -172,6 +288,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, 18)),
       guestsCount: 4,
       status: "booked",
+      source: "direct_web",
+      channelId: "channel_direct_web",
+      externalBookingId: `${DEMO_PREFIX}direct-202-suite`,
     },
     {
       id: `${DEMO_PREFIX}res-cancelled`,
@@ -181,6 +300,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, -7)),
       guestsCount: 2,
       status: "cancelled",
+      source: "expedia",
+      channelId: "channel_expedia",
+      externalBookingId: `${DEMO_PREFIX}expedia-cancelled`,
     },
     {
       id: `${DEMO_PREFIX}res-done`,
@@ -190,6 +312,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, -1)),
       guestsCount: 2,
       status: "checked_out",
+      source: "front_desk",
+      channelId: null,
+      externalBookingId: null,
     },
     {
       id: `${DEMO_PREFIX}res-done-2`,
@@ -199,6 +324,9 @@ function buildDemoReservations(today: Date) {
       checkOutDate: isoDate(addDays(today, -2)),
       guestsCount: 4,
       status: "checked_out",
+      source: "direct_web",
+      channelId: "channel_direct_web",
+      externalBookingId: `${DEMO_PREFIX}direct-done-2`,
     },
   ] as const;
 }
@@ -214,6 +342,12 @@ async function seedHotelDemo() {
       logger.info("Clearing previous demo data...");
       await clearDemoSeedData(tx);
 
+      logger.info("Seeding sales channels...");
+      await tx
+        .insert(salesChannel)
+        .values([...DEMO_CHANNELS])
+        .onConflictDoNothing({ target: salesChannel.code });
+
       logger.info("Seeding room types...");
       await tx.insert(roomType).values([...DEMO_ROOM_TYPES]);
 
@@ -223,13 +357,52 @@ async function seedHotelDemo() {
       logger.info("Seeding guests...");
       await tx.insert(guest).values([...DEMO_GUESTS]);
 
+      logger.info("Seeding channel room mappings...");
+      await tx.insert(channelRoomMapping).values([...DEMO_CHANNEL_MAPPINGS]);
+
       logger.info("Seeding reservations...");
       await tx.insert(reservation).values([...demoReservations]);
+
+      const housekeepingUserId = await getDemoHousekeepingUserId(tx);
+      if (housekeepingUserId) {
+        const cleaningRooms = DEMO_ROOMS.filter(
+          (demoRoom) => demoRoom.status === "cleaning",
+        );
+
+        logger.info("Seeding housekeeping shift and tasks...");
+        await tx.insert(hkShift).values({
+          id: DEMO_HK_SHIFT_ID,
+          status: "open",
+          openedByUserId: housekeepingUserId,
+          openedAt: subHours(new Date(), 2),
+        });
+
+        if (cleaningRooms.length > 0) {
+          await tx.insert(hkRoomTask).values(
+            cleaningRooms.map((demoRoom) => ({
+              id: `${DEMO_PREFIX}hk-task-${demoRoom.id.replace(DEMO_PREFIX, "")}`,
+              shiftId: DEMO_HK_SHIFT_ID,
+              roomId: demoRoom.id,
+              status: "pending",
+            })),
+          );
+        }
+      } else {
+        logger.warn(
+          "Skipping housekeeping shift seed because no user exists in the database.",
+        );
+      }
     });
 
     logger.info("Hotel demo seed completed!");
     logger.info(
       `  Room types: ${DEMO_ROOM_TYPES.length}, Rooms: ${DEMO_ROOMS.length}, Guests: ${DEMO_GUESTS.length}, Reservations: ${demoReservations.length}`,
+    );
+    logger.info(
+      `  Channels: ${DEMO_CHANNELS.length}, Mappings: ${DEMO_CHANNEL_MAPPINGS.length}`,
+    );
+    logger.info(
+      "  Housekeeping: open shift + cleaning room tasks seeded when a user exists",
     );
     logger.info(
       `  Calendar range: ${isoDate(today)} → ${isoDate(addDays(today, 14))} (use /app/calendar)`,

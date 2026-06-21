@@ -13,7 +13,9 @@ async function clearSeedDemo() {
     });
 
     logger.info("Demo seed data cleared!");
-    logger.info("  Removed: invoices, reservations, guests, rooms, room types");
+    logger.info(
+      "  Removed: invoices, housekeeping shifts/tasks, channel mappings, holds, reservations, guests, rooms, room types",
+    );
     logger.info(
       "  Run `bun run seed:hotel` then `bun run seed:billing` to re-seed.",
     );

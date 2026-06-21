@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
-import { requirePermission } from "@/modules/roles/domain/http/middleware";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
+import { requirePermission } from "@/modules/roles/domain/http/middleware";
 import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
@@ -29,14 +29,10 @@ import { updateRoomTypeService } from "../service/update-room-type";
 
 export const hotelRoomsRoutes = new Elysia()
   .use(serverContext)
-  .get(
-    "/room-types",
-    async ({ db, query }) => listRoomTypes(query, db),
-    {
-      beforeHandle: requirePermission(Permissions.rooms.read),
-      query: OffsetPageQuerySchema,
-    },
-  )
+  .get("/room-types", async ({ db, query }) => listRoomTypes(query, db), {
+    beforeHandle: requirePermission(Permissions.rooms.read),
+    query: OffsetPageQuerySchema,
+  })
   .get(
     "/room-types/lookup",
     async ({ db, query }) => {
@@ -48,10 +44,7 @@ export const hotelRoomsRoutes = new Elysia()
       const filters: FilterConditionDTO[] | undefined = q
         ? [{ field: "name", op: "contains" as const, value: q }]
         : undefined;
-      const result = await listRoomTypes(
-        { limit, offset: skip, filters },
-        db,
-      );
+      const result = await listRoomTypes({ limit, offset: skip, filters }, db);
       const items = result.data.map((r) => ({ id: r.id, name: r.name }));
       return { items, total: result.meta.total };
     },
@@ -145,14 +138,10 @@ export const hotelRoomsRoutes = new Elysia()
       params: RoomTypeIdParamSchema,
     },
   )
-  .get(
-    "/rooms",
-    async ({ db, query }) => listRooms(query, db),
-    {
-      beforeHandle: requirePermission(Permissions.rooms.read),
-      query: OffsetPageQuerySchema,
-    },
-  )
+  .get("/rooms", async ({ db, query }) => listRooms(query, db), {
+    beforeHandle: requirePermission(Permissions.rooms.read),
+    query: OffsetPageQuerySchema,
+  })
   .get(
     "/rooms/:id",
     async ({ db, params, status }) => {
@@ -215,12 +204,13 @@ export const hotelRoomsRoutes = new Elysia()
   )
   .patch(
     "/rooms/:id/status",
-    async ({ db, params, body, status }) => {
+    async ({ db, params, body, status, user }) => {
       try {
         const { updated } = await runInTransaction(db, (tx) =>
           setRoomStatusService(tx, {
             id: params.id,
             input: body,
+            actorId: user?.id,
           }),
         );
         return updated;

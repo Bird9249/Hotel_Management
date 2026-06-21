@@ -20,6 +20,7 @@ import {
   cn,
   Skeleton,
 } from "@/components/kit";
+import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
 import type { RoomAvailabilityItem } from "@/modules/reservations/domain/types";
 import { SimpleSelect } from "@/shared/ui/SimpleSelect";
 import { useAvailabilityQuery } from "../api/queries";
@@ -404,6 +405,7 @@ function RoomAvailabilityCard({
               <span className="truncate font-medium text-foreground">
                 {room.guestName}
               </span>
+              <ReservationSourceBadge source={room.source} />
             </div>
             {room.checkInDate && room.checkOutDate && (
               <div className="flex items-center gap-2 text-muted-foreground text-xs">

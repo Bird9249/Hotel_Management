@@ -15,6 +15,20 @@
       "when": 1781506974456,
       "tag": "0001_demo_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781952150189,
+      "tag": "0002_salty_red_ghost",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781966857168,
+      "tag": "0003_skinny_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

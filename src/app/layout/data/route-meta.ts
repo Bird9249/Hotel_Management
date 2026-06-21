@@ -41,6 +41,7 @@ export const routeMeta: Record<string, RouteMeta> = {
   },
   "/app/calendar": { label: "ປະຕິທິນການຈອງ", parent: "/app/reservations" },
   "/app/housekeeping": { label: "ຄິວທຳຄວາມສະອາດ" },
+  "/app/hk-shifts": { label: "ກະແມ່ບ້ານ", parent: "/app/housekeeping" },
   "/app/invoices": { label: "ໃບບິນ" },
   "/app/invoices/$id": {
     label: "ລາຍລະອຽດໃບບິນ",
@@ -48,6 +49,7 @@ export const routeMeta: Record<string, RouteMeta> = {
   },
   "/app/cash-shifts": { label: "ກະເງິນສົດ" },
   "/app/reports": { label: "ລາຍງານ" },
+  "/app/channels": { label: "ຊ່ອງທາງການຂາຍ" },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },
 };

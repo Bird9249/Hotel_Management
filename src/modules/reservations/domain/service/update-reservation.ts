@@ -1,8 +1,8 @@
+import { reserveInventoryService } from "@/modules/channels/domain/service/reserve-inventory";
 import { getGuestById } from "@/modules/guests/domain/repo/get-guest-by-id";
 import { getRoomById } from "@/modules/rooms/domain/repo/get-room-by-id";
 import type { DbTransaction } from "@/shared/types";
 import type { ReservationUpdateInput } from "../contracts";
-import { findOverlapping } from "../repo/find-overlapping";
 import { getReservationById } from "../repo/get-reservation-by-id";
 import { updateReservation } from "../repo/update-reservation";
 
@@ -29,11 +29,12 @@ export async function updateReservationService(
   const checkInDate = params.input.checkInDate ?? before.checkInDate;
   const checkOutDate = params.input.checkOutDate ?? before.checkOutDate;
 
-  const overlap = await findOverlapping(
-    { roomId, checkInDate, checkOutDate, excludeId: params.id },
-    client,
-  );
-  if (overlap) throw new Error("ROOM_NOT_AVAILABLE");
+  await reserveInventoryService(client, {
+    roomId,
+    checkInDate,
+    checkOutDate,
+    excludeReservationId: params.id,
+  });
 
   const updated = await updateReservation(params.id, params.input, client);
   if (!updated) throw new Error("Failed to update reservation");

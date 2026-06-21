@@ -20,6 +20,14 @@ export const Roles: Record<string, PermissionId[]> = {
     "billing:payment",
     "billing:shift",
     "reports:read",
+    "channels:read",
+    "housekeeping:read",
   ],
-  housekeeping: ["rooms:read", "rooms:status"],
+  housekeeping: [
+    "rooms:read",
+    "rooms:status",
+    "housekeeping:read",
+    "housekeeping:shift",
+    "housekeeping:task",
+  ],
 };

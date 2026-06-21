@@ -10,7 +10,11 @@ export async function getAvailabilityService(
     throw new Error("INVALID_DATE_RANGE");
   }
   const rooms = await listRoomAvailability(
-    { from: params.query.from, to: params.query.to },
+    {
+      from: params.query.from,
+      to: params.query.to,
+      roomTypeId: params.query.roomTypeId,
+    },
     client,
   );
   return { from: params.query.from, to: params.query.to, rooms };

@@ -6,6 +6,7 @@ import {
   DataTable,
   type TanstackReactTable,
 } from "@/components/kit";
+import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
 import { RowActions } from "@/shared/ui/RowActions";
 import type { ReservationDTO } from "../api/client";
 import { ReservationStatusBadge } from "./ReservationStatusBadge";
@@ -76,6 +77,14 @@ export function ReservationsTable({
       header: "ສະຖານະ",
       cell: ({ row }) => (
         <ReservationStatusBadge status={row.original.status} />
+      ),
+      size: 110,
+    },
+    {
+      id: "source",
+      header: "ຊ່ອງທາງ",
+      cell: ({ row }) => (
+        <ReservationSourceBadge source={row.original.source} />
       ),
       size: 110,
     },

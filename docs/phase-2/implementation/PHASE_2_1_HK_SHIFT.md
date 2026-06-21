@@ -160,13 +160,13 @@ src/modules/housekeeping/
 
 ## 9. Tasks
 
-- [ ] Schema `housekeeping.ts` + migration
-- [ ] Permissions + rbac:sync
-- [ ] Services: open/close shift, list tasks, complete task
-- [ ] แก้ `set-room-status` ให้บันทึก `hk_room_task`
-- [ ] `HkShiftBar` + ปรับ `HousekeepingPage.tsx`
-- [ ] หน้า `/app/hk-shifts` ประวัติกะ
-- [ ] Sidebar + breadcrumb + route registration
+- [x] Schema `housekeeping.ts` + migration
+- [x] Permissions + rbac:sync
+- [x] Services: open/close shift, list tasks, complete task
+- [x] แก้ `set-room-status` ให้บันทึก `hk_room_task`
+- [x] `HkShiftBar` + ปรับ `HousekeepingPage.tsx`
+- [x] หน้า `/app/hk-shifts` ประวัติกะ
+- [x] Sidebar + breadcrumb + route registration
 
 ---
 

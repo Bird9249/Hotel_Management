@@ -15,6 +15,7 @@ export type ReservationDetailRow = {
   checkOutDate: string;
   guestsCount: number;
   status: string;
+  source: string;
   createdAt: Date;
 };
 
@@ -33,6 +34,7 @@ export async function getReservationById(
       checkOutDate: reservation.checkOutDate,
       guestsCount: reservation.guestsCount,
       status: reservation.status,
+      source: reservation.source,
       createdAt: reservation.createdAt,
     })
     .from(reservation)

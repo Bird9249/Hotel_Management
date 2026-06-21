@@ -1,7 +1,12 @@
 import { inArray, like, or } from "drizzle-orm";
 import type { DbClient } from "@/server/platform/db/client";
 import { invoice } from "@/server/platform/db/schema/billing";
+import {
+  channelRoomMapping,
+  inventoryHold,
+} from "@/server/platform/db/schema/channels";
 import { guest } from "@/server/platform/db/schema/hotel-guests";
+import { hkRoomTask, hkShift } from "@/server/platform/db/schema/housekeeping";
 import { reservation } from "@/server/platform/db/schema/reservations";
 import { room, roomType } from "@/server/platform/db/schema/rooms";
 import type { DbTransaction } from "@/shared/types";
@@ -30,6 +35,14 @@ export async function clearDemoBillingData(client: DbTransaction | DbClient) {
 
 export async function clearDemoSeedData(client: DbTransaction | DbClient) {
   await clearDemoBillingData(client);
+  await client.delete(hkRoomTask).where(like(hkRoomTask.id, `${DEMO_PREFIX}%`));
+  await client.delete(hkShift).where(like(hkShift.id, `${DEMO_PREFIX}%`));
+  await client
+    .delete(channelRoomMapping)
+    .where(like(channelRoomMapping.roomTypeId, `${DEMO_PREFIX}%`));
+  await client
+    .delete(inventoryHold)
+    .where(like(inventoryHold.roomTypeId, `${DEMO_PREFIX}%`));
   await client.delete(reservation).where(demoReservationFilter);
   await client.delete(guest).where(like(guest.id, `${DEMO_PREFIX}%`));
   await client.delete(room).where(like(room.id, `${DEMO_PREFIX}%`));

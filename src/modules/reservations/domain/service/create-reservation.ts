@@ -1,10 +1,9 @@
 import { randomUUIDv7 } from "bun";
+import { reserveInventoryService } from "@/modules/channels/domain/service/reserve-inventory";
 import { getGuestById } from "@/modules/guests/domain/repo/get-guest-by-id";
-import { getRoomById } from "@/modules/rooms/domain/repo/get-room-by-id";
 import type { DbTransaction } from "@/shared/types";
 import type { ReservationCreateInput } from "../contracts";
 import { createReservation } from "../repo/create-reservation";
-import { findOverlapping } from "../repo/find-overlapping";
 
 export async function createReservationService(
   client: DbTransaction,
@@ -12,18 +11,12 @@ export async function createReservationService(
 ) {
   const guest = await getGuestById(params.input.guestId, client);
   if (!guest) throw new Error("Guest not found");
-  const room = await getRoomById(params.input.roomId, client);
-  if (!room) throw new Error("Room not found");
 
-  const overlap = await findOverlapping(
-    {
-      roomId: params.input.roomId,
-      checkInDate: params.input.checkInDate,
-      checkOutDate: params.input.checkOutDate,
-    },
-    client,
-  );
-  if (overlap) throw new Error("ROOM_NOT_AVAILABLE");
+  await reserveInventoryService(client, {
+    roomId: params.input.roomId,
+    checkInDate: params.input.checkInDate,
+    checkOutDate: params.input.checkOutDate,
+  });
 
   const created = await createReservation(
     {
@@ -34,6 +27,7 @@ export async function createReservationService(
       checkOutDate: params.input.checkOutDate,
       guestsCount: params.input.guestsCount,
       status: "booked",
+      source: "front_desk",
     },
     client,
   );

@@ -20,6 +20,7 @@ export type ReservationListRow = {
   checkOutDate: string;
   guestsCount: number;
   status: string;
+  source: string;
   createdAt: Date;
 };
 
@@ -38,6 +39,7 @@ export async function listReservations(
     checkOutDate: reservation.checkOutDate,
     guestsCount: reservation.guestsCount,
     status: reservation.status,
+    source: reservation.source,
     createdAt: reservation.createdAt,
   } as const;
 
@@ -50,6 +52,7 @@ export async function listReservations(
       checkOutDate: reservation.checkOutDate,
       guestsCount: reservation.guestsCount,
       status: reservation.status,
+      source: reservation.source,
     },
     filters ?? [],
   );
@@ -66,6 +69,7 @@ export async function listReservations(
       checkOutDate: reservation.checkOutDate,
       guestsCount: reservation.guestsCount,
       status: reservation.status,
+      source: reservation.source,
       createdAt: reservation.createdAt,
     })
     .from(reservation)

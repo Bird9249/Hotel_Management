@@ -12,6 +12,7 @@ export type RoomAvailabilityItem = {
   floor: number | null;
   available: boolean;
   reservationId: string | null;
+  source: string | null;
   guestName: string | null;
   checkInDate: string | null;
   checkOutDate: string | null;
@@ -20,10 +21,10 @@ export type RoomAvailabilityItem = {
 const ACTIVE_STATUSES = ["booked", "checked_in"] as const;
 
 export async function listRoomAvailability(
-  params: { from: string; to: string },
+  params: { from: string; to: string; roomTypeId?: string },
   client: DbTransaction | DbClient,
 ): Promise<RoomAvailabilityItem[]> {
-  const rooms = await client
+  const baseRooms = client
     .select({
       roomId: room.id,
       roomNumber: room.roomNumber,
@@ -31,12 +32,16 @@ export async function listRoomAvailability(
       floor: room.floor,
     })
     .from(room)
-    .leftJoin(roomType, eq(room.roomTypeId, roomType.id))
-    .orderBy(room.roomNumber);
+    .leftJoin(roomType, eq(room.roomTypeId, roomType.id));
+  const filteredRooms = params.roomTypeId
+    ? baseRooms.where(eq(room.roomTypeId, params.roomTypeId))
+    : baseRooms;
+  const rooms = await filteredRooms.orderBy(room.roomNumber);
 
   const activeReservations = await client
     .select({
       id: reservation.id,
+      source: reservation.source,
       roomId: reservation.roomId,
       guestName: guest.fullName,
       checkInDate: reservation.checkInDate,
@@ -66,6 +71,7 @@ export async function listRoomAvailability(
       floor: r.floor,
       available: !hit,
       reservationId: hit?.id ?? null,
+      source: hit?.source ?? null,
       guestName: hit?.guestName ?? null,
       checkInDate: hit?.checkInDate ?? null,
       checkOutDate: hit?.checkOutDate ?? null,

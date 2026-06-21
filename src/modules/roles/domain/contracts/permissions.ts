@@ -39,6 +39,16 @@ export const Permissions = {
   reports: {
     read: "reports:read",
   },
+  channels: {
+    read: "channels:read",
+    manage: "channels:manage",
+    sync: "channels:sync",
+  },
+  housekeeping: {
+    read: "housekeeping:read",
+    shift: "housekeeping:shift",
+    task: "housekeeping:task",
+  },
 } as const;
 
 export const ALL_PERMISSIONS = Object.entries(Permissions).flatMap(
@@ -57,6 +67,8 @@ export const RESOURCE_LABELS: Record<string, string> = {
   reservations: "ການຈອງ",
   billing: "ການເງິນ",
   reports: "ລາຍງານ",
+  channels: "ຊ່ອງທາງການຂາຍ",
+  housekeeping: "ແມ່ບ້ານ",
 };
 
 export const ACTION_LABELS: Record<string, string> = {
@@ -71,7 +83,10 @@ export const ACTION_LABELS: Record<string, string> = {
   checkout: "ເຊັກເອົາ",
   invoice: "ໃບບິນ",
   payment: "ຊຳລະເງິນ",
-  shift: "ກະເງິນສົດ",
+  shift: "ກະ",
+  manage: "ຈັດການ",
+  sync: "ຊິງຄ໌",
+  task: "ວຽກ",
   all: "ທັງໝົດ",
 };
 

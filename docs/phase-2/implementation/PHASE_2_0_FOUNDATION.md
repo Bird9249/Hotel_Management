@@ -193,9 +193,9 @@ channels: {
 
 | Method | Path | Permission | คำอธิบาย |
 |--------|------|------------|----------|
-| GET | `/api/channels` | channels:read | รายการ channel |
-| PATCH | `/api/channels/:id` | channels:manage | ตั้งค่า channel |
-| GET/PUT | `/api/channels/:id/mappings` | channels:manage | room type mapping |
+| GET | `/api/hotel/channels` | channels:read | รายการ channel |
+| PATCH | `/api/hotel/channels/:id` | channels:manage | ตั้งค่า channel |
+| GET/PUT | `/api/hotel/channels/:id/mappings` | channels:manage | room type mapping |
 
 - หน้า `/app/channels` — รายการ channel + mapping
 - แสดง badge `source` ในตารางจอง / Front Desk / Calendar
@@ -204,19 +204,23 @@ channels: {
 
 ## 8. Tasks
 
-- [ ] Schema + migration (`channels.ts`, ขยาย `reservations.ts`)
-- [ ] `get-room-type-availability` service + unit test overlap scenarios
-- [ ] `reserve-inventory` + `release-hold` services
-- [ ] Refactor create/cancel reservation ให้ trigger inventory recalc
-- [ ] Permissions + rbac:sync
-- [ ] Admin UI `/app/channels`
-- [ ] แสดง `source` ในตารางจอง / Front Desk / Calendar
-- [ ] Seed `sales_channel` record `direct_web`
+- [x] Schema + migration (`channels.ts`, ขยาย `reservations.ts`)
+- [x] `get-room-type-availability` service
+- [ ] Unit test overlap scenarios
+- [x] `reserve-inventory` + `release-hold` services
+- [x] Refactor create/update reservation ให้ใช้ inventory service
+- [ ] Refactor cancel reservation ให้ trigger inventory recalc / sync event (Phase 2.4)
+- [x] Permissions `channels:*` + migration update role seed
+- [ ] รัน `bun run rbac:sync` บนฐานข้อมูลจริงหลัง deploy
+- [x] Admin UI `/app/channels`
+- [x] แสดง `source` ในตารางจอง / Front Desk / Calendar
+- [x] Seed `sales_channel` records (`direct_web`, `agoda`, `booking_com`, `expedia`)
+- [x] Seed channel room mappings สำหรับ demo data
 
 ---
 
 ## 9. Definition of Done (Phase 2.0)
 
-- [ ] จองห้องสุดท้ายของ room type ผ่าน Front Desk แล้ว `availableCount` = 0
-- [ ] Hold หมดอายุแล้ว inventory คืนอัตโนมัติ
-- [ ] Admin ตั้ง mapping room type กับ channel ได้
+- [ ] จองห้องสุดท้ายของ room type ผ่าน Front Desk แล้ว `availableCount` = 0 — QA ด้วยมือ
+- [x] Hold หมดอายุแล้วไม่นับใน inventory (`expires_at > now()` filter)
+- [ ] Admin ตั้ง mapping room type กับ channel ได้ — QA ด้วยมือบน UI

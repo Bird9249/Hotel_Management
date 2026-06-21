@@ -46,6 +46,7 @@ export const ReservationIdParamSchema = z.object({ id: z.string().min(1) });
 export const AvailabilityQuerySchema = z.object({
   from: z.string().min(1),
   to: z.string().min(1),
+  roomTypeId: z.string().min(1).optional(),
 });
 
 export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;

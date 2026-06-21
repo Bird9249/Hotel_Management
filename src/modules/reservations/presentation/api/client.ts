@@ -41,6 +41,7 @@ export const reservationsApi = {
     const url = new URL(`${hotelBase}/availability`);
     url.searchParams.set("from", query.from);
     url.searchParams.set("to", query.to);
+    if (query.roomTypeId) url.searchParams.set("roomTypeId", query.roomTypeId);
     return fetcher.get<AvailabilityResult>(url.toString());
   },
   async create(input: ReservationCreateInput) {

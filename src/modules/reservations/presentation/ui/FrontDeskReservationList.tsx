@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { LogIn, LogOut, Users } from "lucide-react";
 import { Badge, Button, cn } from "@/components/kit";
+import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
 import type { ReservationDTO } from "../api/client";
 import { ReservationStatusBadge } from "./ReservationStatusBadge";
 
@@ -67,6 +68,7 @@ export function FrontDeskReservationList({
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold">{item.guestName}</p>
               <ReservationStatusBadge status={item.status} />
+              <ReservationSourceBadge source={item.source} />
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
               <span>
