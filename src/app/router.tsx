@@ -189,6 +189,20 @@ const HkShiftsPage = lazy(() =>
     }),
   ),
 );
+const MobileShell = lazy(() =>
+  import("@/modules/housekeeping/presentation/mobile/MobileShell").then(
+    (module) => ({
+      default: module.MobileShell,
+    }),
+  ),
+);
+const HkMobilePage = lazy(() =>
+  import("@/modules/housekeeping/presentation/mobile/pages/HkMobilePage").then(
+    (module) => ({
+      default: module.HkMobilePage,
+    }),
+  ),
+);
 const InvoicesPage = lazy(() =>
   import("@/modules/billing/presentation/pages/InvoicesPage").then(
     (module) => ({
@@ -270,6 +284,12 @@ const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
   component: AuthenticatedLayout,
+});
+
+const mobileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/m",
+  component: MobileShell,
 });
 
 const dashboardRoute = createRoute({
@@ -575,6 +595,18 @@ const hkShiftsRoute = createRoute({
   ),
 });
 
+const hkMobileRoute = createRoute({
+  getParentRoute: () => mobileRoute,
+  path: "/housekeeping",
+  component: () => (
+    <RequirePermissions all={["housekeeping:task"]}>
+      <LazyPage>
+        <HkMobilePage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const invoicesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/invoices",
@@ -667,6 +699,7 @@ const invoiceVerifyRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([loginRoute]),
   verifyLayoutRoute.addChildren([invoiceVerifyRoute]),
+  mobileRoute.addChildren([hkMobileRoute]),
   appRoute.addChildren([
     dashboardRoute,
     rolesRoute,

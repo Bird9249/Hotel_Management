@@ -11,6 +11,10 @@ import {
   HkTaskUpdateSchema,
   OpenHkShiftSchema,
 } from "../contracts";
+import {
+  type HousekeepingEvent,
+  subscribeHousekeepingEvents,
+} from "../events/housekeeping-events";
 import { listHkShifts } from "../repo/list-shifts";
 import { closeHkShiftService } from "../service/close-shift";
 import { updateHkTaskService } from "../service/complete-task";
@@ -20,6 +24,63 @@ import { openHkShiftService } from "../service/open-shift";
 
 export const hotelHousekeepingRoutes = new Elysia()
   .use(serverContext)
+  .get(
+    "/housekeeping/events",
+    ({ request }) => {
+      const encoder = new TextEncoder();
+      const formatEvent = (event: HousekeepingEvent) =>
+        `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`;
+
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(
+            encoder.encode(
+              formatEvent({
+                type: "heartbeat",
+                occurredAt: new Date().toISOString(),
+              }),
+            ),
+          );
+
+          const unsubscribe = subscribeHousekeepingEvents((event) => {
+            controller.enqueue(encoder.encode(formatEvent(event)));
+          });
+
+          const heartbeat = setInterval(() => {
+            controller.enqueue(
+              encoder.encode(
+                formatEvent({
+                  type: "heartbeat",
+                  occurredAt: new Date().toISOString(),
+                }),
+              ),
+            );
+          }, 15_000);
+
+          request.signal.addEventListener(
+            "abort",
+            () => {
+              clearInterval(heartbeat);
+              unsubscribe();
+              controller.close();
+            },
+            { once: true },
+          );
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Cache-Control": "no-cache, no-transform",
+          Connection: "keep-alive",
+          "Content-Type": "text/event-stream",
+        },
+      });
+    },
+    {
+      beforeHandle: requirePermission(Permissions.housekeeping.read),
+    },
+  )
   .get(
     "/housekeeping/shifts/current",
     async ({ db, user, status }) => {

@@ -17,12 +17,15 @@ export const hkTaskKeys = {
   list: () => ["hk-tasks", "list"] as const,
 };
 
-export function useCurrentHkShiftQuery(enabled = true) {
+export function useCurrentHkShiftQuery(
+  enabled = true,
+  refetchInterval = 30_000,
+) {
   return useQuery({
     queryKey: hkShiftKeys.current(),
     queryFn: () => housekeepingApi.getCurrentShift(),
     enabled,
-    refetchInterval: 30_000,
+    refetchInterval,
   });
 }
 
@@ -66,12 +69,12 @@ export function useHkShiftsQuery(
   });
 }
 
-export function useHkTasksQuery(enabled = true) {
+export function useHkTasksQuery(enabled = true, refetchInterval = 30_000) {
   return useQuery({
     queryKey: hkTaskKeys.list(),
     queryFn: () => housekeepingApi.listTasks(),
     enabled,
-    refetchInterval: 30_000,
+    refetchInterval,
   });
 }
 

@@ -229,7 +229,7 @@ CREATE INDEX "outbox_locked_until" ON "outbox" USING btree ("locked_until");
 -- ອອກແບບ role (src/modules/roles/domain/contracts/roles.ts):
 --   admin         : ເຂົ້າເຖິງໄດ້ທຸກສ່ວນ
 --   receptionist  : ຈອງ / ເຊັກອິນ-ເອົາທ໌ / ໃບບິນ / ກະເງິນສົດ / ລາຍງານ
---   housekeeping  : ເບິ່ງຫ້ອງ + ອັບເດດສະຖານະທຳຄວາມສະອາດ
+--   housekeeping  : ເບິ່ງຫ້ອງ + ອັບເດດສະຖານະອານາໄມ
 INSERT INTO rbac_role (id, name, description, permissions) VALUES
 -- admin: ທຸກ permission
 ('admin', 'ຜູ້ດູແລລະບົບ', 'ເຂົ້າເຖິງໄດ້ທຸກສ່ວນຂອງລະບົບ', ARRAY[
@@ -251,8 +251,8 @@ INSERT INTO rbac_role (id, name, description, permissions) VALUES
   'billing:read', 'billing:invoice', 'billing:payment', 'billing:shift',
   'reports:read'
 ]),
--- housekeeping: ເບິ່ງຫ້ອງ + ປ່ຽນສະຖານະທຳຄວາມສະອາດ
-('housekeeping', 'ແມ່ບ້ານ', 'ອັບເດດສະຖານະຫ້ອງ (ທຳຄວາມສະອາດ / ພ້ອມໃຊ້)', ARRAY[
+-- housekeeping: ເບິ່ງຫ້ອງ + ປ່ຽນສະຖານະອານາໄມ
+('housekeeping', 'ແມ່ບ້ານ', 'ອັບເດດສະຖານະຫ້ອງ (ອານາໄມ / ພ້ອມໃຊ້)', ARRAY[
   'rooms:read', 'rooms:status'
 ]);
 

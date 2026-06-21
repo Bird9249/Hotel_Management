@@ -1,18 +1,18 @@
+import type { RoomStatus } from "@/modules/rooms/domain/contracts";
 import type { LucideIcon } from "lucide-react";
 import { Brush, CheckCircle2, UserRound, Wrench } from "lucide-react";
-import type { RoomStatus } from "@/modules/rooms/domain/contracts";
 
 export const ROOM_STATUS_LABELS: Record<RoomStatus, string> = {
   available: "ວ່າງ",
   occupied: "ມີແຂກພັກ",
-  cleaning: "ກຳລັງທຳຄວາມສະອາດ",
+  cleaning: "ກຳລັງອານາໄມຄວາມສະອາດ",
   maintenance: "ປິດປັບປຸງ",
 };
 
 export const ROOM_STATUS_DESCRIPTIONS: Record<RoomStatus, string> = {
   available: "ພ້ອມຮັບແຂກເຂົ້າພັກ",
   occupied: "ມີແຂກພັກຢູ່ໃນຫ້ອງ",
-  cleaning: "ກຳລັງດຳເນີນການທຳຄວາມສະອາດ",
+  cleaning: "ກຳລັງດຳເນີນການອານາໄມ",
   maintenance: "ປິດໃຊ້ງານຊົ່ວຄາວ",
 };
 
@@ -50,9 +50,9 @@ export const ROOM_STATUS_CARD_STYLES: Record<
 };
 
 export const ROOM_STATUS_OPTIONS: Array<{ value: RoomStatus; label: string }> =
-  (
-    Object.entries(ROOM_STATUS_LABELS) as Array<[RoomStatus, string]>
-  ).map(([value, label]) => ({ value, label }));
+  (Object.entries(ROOM_STATUS_LABELS) as Array<[RoomStatus, string]>).map(
+    ([value, label]) => ({ value, label }),
+  );
 
 export function getRoomStatusLabel(status: string): string {
   return ROOM_STATUS_LABELS[status as RoomStatus] ?? status;

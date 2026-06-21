@@ -1,3 +1,15 @@
+import { Link } from "@tanstack/react-router";
+import { format } from "date-fns";
+import {
+  BedDouble,
+  Bell,
+  BrushCleaning,
+  CheckCircle2,
+  Clock3,
+  Play,
+  Sparkles,
+} from "lucide-react";
+import { useState } from "react";
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
 import {
@@ -8,6 +20,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  cn,
+  confirm,
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -16,11 +30,13 @@ import {
   Progress,
   Separator,
   Skeleton,
-  cn,
-  confirm,
 } from "@/components/kit";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
 import type { HkTaskDTO } from "@/modules/housekeeping/domain/types";
+import {
+  useBrowserNotificationPermission,
+  useHousekeepingEvents,
+} from "@/modules/housekeeping/presentation/api/events";
 import {
   useCloseHkShift,
   useCurrentHkShiftQuery,
@@ -29,16 +45,6 @@ import {
 } from "@/modules/housekeeping/presentation/api/queries";
 import { CloseHkShiftDialog } from "@/modules/housekeeping/presentation/ui/CloseHkShiftDialog";
 import { HkShiftBar } from "@/modules/housekeeping/presentation/ui/HkShiftBar";
-import { format } from "date-fns";
-import {
-  BedDouble,
-  BrushCleaning,
-  CheckCircle2,
-  Clock3,
-  Play,
-  Sparkles,
-} from "lucide-react";
-import { useState } from "react";
 
 type TaskStatus = "pending" | "in_progress" | "done";
 
@@ -58,7 +64,7 @@ const TASK_STATUS_META: Record<
     badgeVariant: "outline",
   },
   in_progress: {
-    label: "ກຳລັງທຳ",
+    label: "ກຳລັງອານາໄມ",
     helper: "ກຳລັງດຳເນີນງານ",
     badgeVariant: "secondary",
   },
@@ -91,6 +97,11 @@ function EmptyState({
 
 export function HousekeepingPage() {
   const [closeDialog, setCloseDialog] = useState(false);
+  const notification = useBrowserNotificationPermission({ autoRequest: true });
+  useHousekeepingEvents(true, {
+    notifyCleaning: true,
+    osNotifyCleaning: notification.isGranted,
+  });
   const shift = useCurrentHkShiftQuery();
   const tasks = useHkTasksQuery();
   const updateTask = useUpdateHkTask();
@@ -140,7 +151,7 @@ export function HousekeepingPage() {
                   <BrushCleaning />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">ຄິວທຳຄວາມສະອາດ</CardTitle>
+                  <CardTitle className="text-2xl">ຄິວອານາໄມ</CardTitle>
                   <CardDescription>
                     ຈັດການວຽກແມ່ບ້ານປະຈຳກະ — {format(new Date(), "dd/MM/yyyy")}
                   </CardDescription>
@@ -174,7 +185,7 @@ export function HousekeepingPage() {
                 <p className="font-bold text-xl tabular-nums">{pendingCount}</p>
               </div>
               <div className="rounded-lg border bg-card p-3">
-                <p className="text-muted-foreground text-xs">ກຳລັງທຳ</p>
+                <p className="text-muted-foreground text-xs">ກຳລັງອານາໄມ</p>
                 <p className="font-bold text-xl tabular-nums">
                   {inProgressCount}
                 </p>
@@ -184,6 +195,21 @@ export function HousekeepingPage() {
                 <p className="font-bold text-xl tabular-nums">{doneCount}</p>
               </div>
             </div>
+          </CardContent>
+          <CardContent className="flex flex-wrap gap-2 border-t pt-4">
+            {notification.canRequest && (
+              <Button
+                className="w-full sm:w-auto"
+                onClick={notification.requestPermission}
+                variant="outline"
+              >
+                <Bell className="size-4" />
+                ເປີດແຈ້ງເຕືອນ
+              </Button>
+            )}
+            <Button asChild className="w-full sm:w-auto" variant="outline">
+              <Link to="/m/housekeeping">ເປີດໃນໂທລະສັບ</Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -195,7 +221,7 @@ export function HousekeepingPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <CardTitle>ລາຍການຫ້ອງ</CardTitle>
-                  <CardDescription>ວຽກທຳຄວາມສະອາດທີ່ຜູກກັບກະປັດຈຸບັນ</CardDescription>
+                  <CardDescription>ວຽກອານາໄມທີ່ຜູກກັບກະປັດຈຸບັນ</CardDescription>
                 </div>
                 <Badge variant="outline">{total} ລາຍການ</Badge>
               </div>
@@ -216,7 +242,7 @@ export function HousekeepingPage() {
                   </div>
                 ) : taskItems.length === 0 ? (
                   <EmptyState
-                    title="ບໍ່ມີວຽກທຳຄວາມສະອາດ"
+                    title="ບໍ່ມີວຽກອານາໄມ"
                     description="ທຸກຫ້ອງພ້ອມໃຫ້ບໍລິການແລ້ວ"
                   />
                 ) : (

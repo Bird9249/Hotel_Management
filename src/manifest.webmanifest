@@ -1,18 +1,18 @@
 {
-    "background_color": "#0f172a",
-    "description": "Bun + React starter with offline support.",
-    "display": "standalone",
-    "icons": [
-        {
-            "purpose": "any maskable",
-            "sizes": "512x512",
-            "src": "/logo.svg",
-            "type": "image/svg+xml"
-        }
-    ],
-    "name": "Bun + React Starter",
-    "scope": "/",
-    "short_name": "BunReact",
-    "start_url": "/",
-    "theme_color": "#0f172a"
+  "background_color": "#0f172a",
+  "description": "Hotel housekeeping mobile task queue for room cleaning updates.",
+  "display": "standalone",
+  "icons": [
+    {
+      "purpose": "any maskable",
+      "sizes": "512x512",
+      "src": "/logo.svg",
+      "type": "image/svg+xml"
+    }
+  ],
+  "name": "Hotel Housekeeping",
+  "scope": "/",
+  "short_name": "Housekeeping",
+  "start_url": "/m/housekeeping",
+  "theme_color": "#0f172a"
 }

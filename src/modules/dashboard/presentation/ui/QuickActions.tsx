@@ -1,3 +1,12 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/kit";
+import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
+import type { PermissionId } from "@/modules/roles/domain/contracts/permissions";
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -10,15 +19,6 @@ import {
   ReceiptText,
   UserRound,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/kit";
-import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
-import type { PermissionId } from "@/modules/roles/domain/contracts/permissions";
 
 type QuickAction = {
   title: string;
@@ -79,7 +79,7 @@ const quickActions: QuickAction[] = [
     requiredPermissions: ["reports:read"],
   },
   {
-    title: "ທຳຄວາມສະອາດ",
+    title: "ອານາໄມ",
     description: "ສະຖານະຫ້ອງ",
     url: "/app/housekeeping",
     icon: BrushCleaning,

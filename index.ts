@@ -55,6 +55,7 @@ const manifestFile = findHashedFile("manifest", "webmanifest");
 const indexFile = findHashedFile("index", "html");
 
 const server = serve({
+  idleTimeout: 20,
   routes: {
     "/service-worker.js": new Response(serviceWorkerFile, {
       headers: {

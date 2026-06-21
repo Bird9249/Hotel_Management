@@ -1,3 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
+import { LogIn } from "lucide-react";
+import { useState } from "react";
+import z from "zod";
 import {
   Button,
   FormCheckbox,
@@ -10,12 +14,9 @@ import {
   toast,
   zodResolver,
 } from "@/components/kit";
-import { useNavigate } from "@tanstack/react-router";
-import { LogIn } from "lucide-react";
-import { useState } from "react";
-import z from "zod";
 import { authClient } from "../api/client";
 import { useDevLoginEnabled } from "../api/useDevLoginEnabled";
+import { getPostLoginRoute } from "../lib/post-login-route";
 import { useAuthState } from "../model/useAuthState";
 import { DEV_LOGIN_ROLES, type DevLoginRoleId } from "./dev-login-roles";
 
@@ -51,8 +52,10 @@ export default function SignInForm() {
     await authClient.signIn.email(
       { email, password },
       {
-        onSuccess: () => {
-          navigate({ to: "/app/dashboard" });
+        onSuccess: async () => {
+          const nextSession = await authClient.getSession();
+          const permissions = nextSession.data?.permissions ?? [];
+          navigate({ to: getPostLoginRoute(permissions) });
           toast.success("ເຂົ້າລະບົບສໍາເລັດ");
         },
         onError: (error) => {

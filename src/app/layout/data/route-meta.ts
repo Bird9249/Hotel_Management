@@ -40,7 +40,7 @@ export const routeMeta: Record<string, RouteMeta> = {
     parent: "/app/reservations",
   },
   "/app/calendar": { label: "ປະຕິທິນການຈອງ", parent: "/app/reservations" },
-  "/app/housekeeping": { label: "ຄິວທຳຄວາມສະອາດ" },
+  "/app/housekeeping": { label: "ຄິວອານາໄມ" },
   "/app/hk-shifts": { label: "ກະແມ່ບ້ານ", parent: "/app/housekeeping" },
   "/app/invoices": { label: "ໃບບິນ" },
   "/app/invoices/$id": {

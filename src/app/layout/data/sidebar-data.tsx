@@ -81,7 +81,7 @@ export const sidebarData: SidebarData = {
           requiredPermissions: ["rooms:read"],
         },
         {
-          title: "ທຳຄວາມສະອາດ",
+          title: "ອານາໄມ",
           url: "/app/housekeeping",
           icon: BrushCleaning,
           requiredPermissions: ["housekeeping:read"],

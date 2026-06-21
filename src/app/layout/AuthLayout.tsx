@@ -3,6 +3,7 @@ import { BedDouble, ConciergeBell, Hotel, ReceiptText } from "lucide-react";
 import { useEffect } from "react";
 import { Loader } from "@/components/kit";
 import { ModeToggle } from "@/components/mode-toggle";
+import { getPostLoginRoute } from "@/modules/auth/presentation/lib/post-login-route";
 import { useAuthState } from "@/modules/auth/presentation/model/useAuthState";
 import { sidebarData } from "./data/sidebar-data";
 
@@ -25,16 +26,16 @@ const highlights = [
 ] as const;
 
 export function AuthLayout() {
-  const { isLoading, isAuthenticated } = useAuthState();
+  const { isLoading, isAuthenticated, permissions } = useAuthState();
   const navigate = useNavigate({ from: "/auth" });
   const { brand } = sidebarData;
   const BrandLogo = brand.logo;
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate({ to: "/app/dashboard" });
+      navigate({ to: getPostLoginRoute(permissions) });
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate, permissions]);
 
   if (isLoading) {
     return (
@@ -53,11 +54,11 @@ export function AuthLayout() {
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -end-24 -top-24 size-72 rounded-full bg-primary-foreground/5 blur-3xl"
+          className="pointer-events-none absolute -inset-e-24 -top-24 size-72 rounded-full bg-primary-foreground/5 blur-3xl"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -start-16 -bottom-16 size-56 rounded-full bg-primary-foreground/5 blur-2xl"
+          className="pointer-events-none absolute -inset-s-16 -bottom-16 size-56 rounded-full bg-primary-foreground/5 blur-2xl"
         />
 
         <div className="relative flex items-center gap-3">

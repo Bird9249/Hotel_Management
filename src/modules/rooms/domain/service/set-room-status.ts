@@ -1,3 +1,4 @@
+import { publishHousekeepingEvent } from "@/modules/housekeeping/domain/events/housekeeping-events";
 import { recordRoomStatusTaskService } from "@/modules/housekeeping/domain/service/record-room-status-task";
 import type { DbTransaction } from "@/shared/types";
 import type { RoomStatusUpdateInput } from "../contracts";
@@ -21,6 +22,13 @@ export async function setRoomStatusService(
     roomId: params.id,
     status: params.input.status,
     userId: params.actorId,
+  });
+  publishHousekeepingEvent({
+    type: "room_status_changed",
+    roomId: params.id,
+    roomNumber: before.roomNumber,
+    status: params.input.status,
+    occurredAt: new Date().toISOString(),
   });
   return { updated, before };
 }

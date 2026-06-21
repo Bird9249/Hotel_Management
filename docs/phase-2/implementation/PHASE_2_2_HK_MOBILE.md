@@ -18,8 +18,8 @@
 
 **Deliverable:** แม่บ้านใช้มือถือทำงานได้ครบ · Reception เห็นสถานะห้องอัปเดตภายใน ≤ 15 วินาที
 
-**นอกขอบเขต (Phase 2.2.1):**
-- SSE `/api/housekeeping/events` (MVP ใช้ polling 10s ก่อน)
+**ต่อยอดแล้ว (Phase 2.2.1):**
+- SSE `/api/hotel/housekeeping/events` สำหรับ push event ไปที่ Reception
 - Offline sync
 - Native iOS/Android
 
@@ -41,7 +41,7 @@
 ```
 /m/housekeeping
 ├── Shift bar: [ເປີດກະ] / ກຳລັງເຮັດວຽກ · ห้องเหลือ N
-├── Tab: ລໍຖ້າ (pending) | ກຳລັງທຳ (in_progress) | ເສັດແລ້ວ (done)
+├── Tab: ລໍຖ້າ (pending) | ກຳລັງອານາໄມ (in_progress) | ເສັດແລ້ວ (done)
 └── Card ต่อห้อง:
     - เลขห้อง + ชั้น + ประเภท
     - [ເລີ່ມອານາໄມ] → [ພ້ອມໃຊ້]
@@ -85,15 +85,17 @@ Reuse hooks จาก `housekeeping/api/queries.ts`
 - TanStack Query `refetchInterval: 10_000` บน task list
 
 **ถัดไป (2.2.1):**
-- SSE push เมื่อ room status เปลี่ยน
+- [x] SSE push เมื่อ room status เปลี่ยนเป็น `available`
+- [x] Booking Calendar + Front Desk subscribe event แล้ว invalidate availability/rooms cache
+- [x] HK desktop/mobile subscribe event แล้วแสดง in-app + OS notification เมื่อมีห้อง `cleaning` ใหม่ (ขณะเว็บ/PWA เปิดอยู่)
 - Badge บน Front Desk เมื่อห้องพร้อม check-in
 
 ---
 
 ## 7. PWA
 
-- [ ] `public/manifest.webmanifest` — name, icons, theme
-- [ ] Meta viewport + apple-touch-icon
+- [x] `src/manifest.webmanifest` — name, icons, theme
+- [x] Meta viewport + apple-touch-icon
 - [ ] ทดสอบ Chrome Android + Safari iOS
 - [ ] Offline banner (read-only) — ไม่ sync offline
 
@@ -101,12 +103,14 @@ Reuse hooks จาก `housekeeping/api/queries.ts`
 
 ## 8. Tasks
 
-- [ ] สร้าง `MobileShell` + route group `/m/*`
-- [ ] `HkMobilePage` + task cards + tabs
-- [ ] Integrate shift bar (open/close)
-- [ ] Refetch polling 10s
-- [ ] PWA manifest + icons
-- [ ] Link จาก desktop → mobile
+- [x] สร้าง `MobileShell` + route group `/m/*`
+- [x] `HkMobilePage` + task cards + tabs
+- [x] Integrate shift bar (open/close)
+- [x] Refetch polling 10s
+- [x] Phase 2.2.1: SSE event stream สำหรับ room status update
+- [x] Phase 2.2.1: Browser/OS notification สำหรับแม่บ้านเมื่อมีงานใหม่
+- [x] PWA manifest + icons
+- [x] Link จาก desktop → mobile
 - [ ] QA กับ `housekeeping@hotel.com` บนมือถือจริง
 
 ---

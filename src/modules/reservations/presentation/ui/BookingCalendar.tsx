@@ -1,15 +1,3 @@
-import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
-import {
-  BedDouble,
-  CalendarDays,
-  CalendarRange,
-  CheckCircle2,
-  Layers,
-  Plus,
-  UserRound,
-  XCircle,
-} from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
 import type { DateRange } from "@/components/date-picker";
 import { DatePicker } from "@/components/date-picker";
 import {
@@ -17,12 +5,27 @@ import {
   Button,
   Card,
   CardContent,
-  cn,
   Skeleton,
+  cn,
 } from "@/components/kit";
 import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
+import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
 import type { RoomAvailabilityItem } from "@/modules/reservations/domain/types";
 import { SimpleSelect } from "@/shared/ui/SimpleSelect";
+import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
+import {
+  BedDouble,
+  Brush,
+  CalendarDays,
+  CalendarRange,
+  CheckCircle2,
+  Layers,
+  Plus,
+  UserRound,
+  Wrench,
+  XCircle,
+} from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useAvailabilityQuery } from "../api/queries";
 
 type BookingCalendarProps = {
@@ -94,8 +97,9 @@ export function BookingCalendar({
   const rangeReady = Boolean(from && to && to > from);
 
   const availability = useAvailabilityQuery(rangeReady ? { from, to } : null);
+  useHousekeepingEvents(rangeReady);
 
-  const allRooms = availability.data?.rooms ?? [];
+  const allRooms: RoomAvailabilityItem[] = availability.data?.rooms ?? [];
 
   const floors = useMemo(() => {
     const set = new Set<string>();
@@ -118,10 +122,12 @@ export function BookingCalendar({
 
   const stats = useMemo(() => {
     const available = allRooms.filter((r) => r.available).length;
+    const cleaning = allRooms.filter((r) => r.roomStatus === "cleaning").length;
     return {
       total: allRooms.length,
       available,
-      occupied: allRooms.length - available,
+      cleaning,
+      occupied: allRooms.length - available - cleaning,
     };
   }, [allRooms]);
 
@@ -134,7 +140,7 @@ export function BookingCalendar({
   return (
     <div className="space-y-4">
       {/* Summary */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-4">
         <StatCard
           label="ຫ້ອງທັງໝົດ"
           value={stats.total}
@@ -149,7 +155,14 @@ export function BookingCalendar({
           valueClassName="text-emerald-700 dark:text-emerald-400"
         />
         <StatCard
-          label="ມີການຈອງ"
+          label="ກຳລັງອານາໄມ"
+          value={stats.cleaning}
+          icon={<Brush className="size-4 text-amber-600" />}
+          className="border-amber-500/30 bg-amber-500/5"
+          valueClassName="text-amber-700 dark:text-amber-400"
+        />
+        <StatCard
+          label="ບໍ່ວ່າງ"
           value={stats.occupied}
           icon={<XCircle className="size-4 text-rose-600" />}
           className="border-rose-500/30 bg-rose-500/5"
@@ -298,7 +311,11 @@ export function BookingCalendar({
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-full bg-rose-500" />
-            ມີການຈອງ — ຊ່ວງວັນທີທັບກັນ
+            ບໍ່ວ່າງ — ມີການຈອງ ຫຼື ປິດໃຊ້ງານ
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full bg-amber-500" />
+            ກຳລັງອານາໄມ — ລໍຖ້າແມ່ບ້ານຢືນຢັນພ້ອມໃຊ້
           </span>
         </div>
       )}
@@ -350,31 +367,26 @@ function RoomAvailabilityCard({
   onBook: BookingCalendarProps["onBookRoom"];
 }) {
   const available = room.available;
+  const visualStatus = getCalendarRoomStatus(room);
 
   return (
     <Card
       className={cn(
         "overflow-hidden py-0 transition-shadow hover:shadow-md",
-        available
-          ? "border-emerald-500/25"
-          : "border-rose-500/25 bg-rose-500/[0.03]",
+        visualStatus.cardClassName,
       )}
     >
-      <div
-        className={cn("h-1", available ? "bg-emerald-500" : "bg-rose-500")}
-      />
-      <CardContent className="space-y-3 p-4">
+      <div className={cn("h-1", visualStatus.barClassName)} />
+      <CardContent className="space-y-3 pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div
               className={cn(
                 "flex size-10 shrink-0 items-center justify-center rounded-xl",
-                available
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                  : "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+                visualStatus.iconClassName,
               )}
             >
-              <BedDouble className="size-5" />
+              <visualStatus.Icon className="size-5" />
             </div>
             <div>
               <p className="font-semibold text-lg leading-none">
@@ -387,14 +399,9 @@ function RoomAvailabilityCard({
           </div>
           <Badge
             variant="outline"
-            className={cn(
-              "shrink-0 font-medium",
-              available
-                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                : "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-400",
-            )}
+            className={cn("shrink-0 font-medium", visualStatus.badgeClassName)}
           >
-            {available ? "ວ່າງ" : "ມີການຈອງ"}
+            {visualStatus.label}
           </Badge>
         </div>
 
@@ -439,6 +446,54 @@ function RoomAvailabilityCard({
       </CardContent>
     </Card>
   );
+}
+
+function getCalendarRoomStatus(room: RoomAvailabilityItem) {
+  if (room.available) {
+    return {
+      label: "ວ່າງ",
+      Icon: BedDouble,
+      cardClassName: "border-emerald-500/25",
+      barClassName: "bg-emerald-500",
+      iconClassName: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+      badgeClassName:
+        "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    };
+  }
+
+  if (room.roomStatus === "cleaning") {
+    return {
+      label: "ກຳລັງອານາໄມ",
+      Icon: Brush,
+      cardClassName: "border-amber-500/30 bg-amber-500/5",
+      barClassName: "bg-amber-500",
+      iconClassName: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+      badgeClassName:
+        "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    };
+  }
+
+  if (room.roomStatus === "maintenance") {
+    return {
+      label: "ປິດປັບປຸງ",
+      Icon: Wrench,
+      cardClassName: "border-muted-foreground/25 bg-muted/40",
+      barClassName: "bg-muted-foreground",
+      iconClassName: "bg-muted text-muted-foreground",
+      badgeClassName:
+        "border-muted-foreground/30 bg-muted text-muted-foreground",
+    };
+  }
+
+  return {
+    label: room.reservationId ? "ມີການຈອງ" : "ບໍ່ວ່າງ",
+    Icon: XCircle,
+    cardClassName: "border-rose-500/25 bg-rose-500/3",
+    barClassName: "bg-rose-500",
+    iconClassName: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+    badgeClassName:
+      "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-400",
+  };
 }
 
 function CalendarSkeleton() {

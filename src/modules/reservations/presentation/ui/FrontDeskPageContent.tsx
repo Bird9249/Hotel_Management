@@ -12,6 +12,7 @@ import {
 } from "@/components/kit";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
 import { ShiftStatusBar } from "@/modules/billing/presentation/ui/ShiftStatusBar";
+import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
 import type { FilterConditionDTO } from "@/shared/contracts/base";
 import type { ReservationDTO } from "../api/client";
 import { useCheckIn, useCheckOut, useReservationsQuery } from "../api/queries";
@@ -39,6 +40,7 @@ function buildTodayFilters(tab: DeskTab, today: string): FilterConditionDTO[] {
 
 export function FrontDeskPageContent() {
   const nav = useNavigate();
+  useHousekeepingEvents();
   const today = todayIso();
   const [tab, setTab] = useState<DeskTab>("arrivals");
   const checkIn = useCheckIn();

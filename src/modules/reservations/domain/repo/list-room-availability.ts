@@ -10,6 +10,7 @@ export type RoomAvailabilityItem = {
   roomNumber: string;
   roomTypeName: string | null;
   floor: number | null;
+  roomStatus: string;
   available: boolean;
   reservationId: string | null;
   source: string | null;
@@ -30,6 +31,7 @@ export async function listRoomAvailability(
       roomNumber: room.roomNumber,
       roomTypeName: roomType.name,
       floor: room.floor,
+      roomStatus: room.status,
     })
     .from(room)
     .leftJoin(roomType, eq(room.roomTypeId, roomType.id));
@@ -69,7 +71,8 @@ export async function listRoomAvailability(
       roomNumber: r.roomNumber,
       roomTypeName: r.roomTypeName,
       floor: r.floor,
-      available: !hit,
+      roomStatus: r.roomStatus,
+      available: !hit && r.roomStatus === "available",
       reservationId: hit?.id ?? null,
       source: hit?.source ?? null,
       guestName: hit?.guestName ?? null,
