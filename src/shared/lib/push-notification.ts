@@ -13,11 +13,7 @@ export type SystemNotificationPayload = {
 };
 
 export function isNotificationSupported(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    "Notification" in window &&
-    "serviceWorker" in navigator
-  );
+  return typeof window !== "undefined" && "Notification" in window;
 }
 
 export function getNotificationPermission(): NotificationPermission {
@@ -41,8 +37,35 @@ export async function showSystemNotification(
   if (!isNotificationSupported()) return;
   if (Notification.permission !== "granted") return;
 
+  const showWindowNotification = () => {
+    const notification = new Notification(payload.title, {
+      body: payload.body,
+      tag: payload.tag,
+      icon: payload.icon ?? "/logo.svg",
+      data: { to: payload.to },
+    });
+    notification.onclick = () => {
+      window.focus();
+      if (payload.to) window.location.href = payload.to;
+      notification.close();
+    };
+  };
+
   try {
-    const registration = await navigator.serviceWorker.ready;
+    if (!("serviceWorker" in navigator)) {
+      showWindowNotification();
+      return;
+    }
+
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+    ]);
+    if (!registration) {
+      showWindowNotification();
+      return;
+    }
+
     // Prefer messaging the active worker so a single code path renders it.
     if (registration.active) {
       registration.active.postMessage({
@@ -58,6 +81,10 @@ export async function showSystemNotification(
       data: { to: payload.to },
     });
   } catch {
-    // ignore — notification is best-effort
+    try {
+      showWindowNotification();
+    } catch {
+      // ignore — notification is best-effort
+    }
   }
 }

@@ -3,6 +3,7 @@ import { auditRoutes } from "@/modules/audit/api";
 import { authRoutes } from "@/modules/auth/api";
 import { billingRoutes } from "@/modules/billing/api";
 import { billingPublicRoutes } from "@/modules/billing/api/public";
+import { bookingEnginePublicRoutes } from "@/modules/booking-engine/api";
 import { channelsRoutes } from "@/modules/channels/api";
 import { guestsRoutes } from "@/modules/guests/api";
 import { housekeepingRoutes } from "@/modules/housekeeping/api";
@@ -26,6 +27,7 @@ export function createRestRoutes() {
     .use(reservationsRoutes)
     .use(billingRoutes)
     .use(billingPublicRoutes)
+    .use(bookingEnginePublicRoutes)
     .use(reportsRoutes)
     .use(settingsRoutes)
     .use(auditRoutes)

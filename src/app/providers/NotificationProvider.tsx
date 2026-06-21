@@ -92,6 +92,19 @@ export function NotificationProvider({
     useState<NotificationPermission>(() => getNotificationPermission());
 
   useEffect(() => {
+    const syncPermission = () => {
+      setDevicePermission(getNotificationPermission());
+    };
+
+    window.addEventListener("focus", syncPermission);
+    document.addEventListener("visibilitychange", syncPermission);
+    return () => {
+      window.removeEventListener("focus", syncPermission);
+      document.removeEventListener("visibilitychange", syncPermission);
+    };
+  }, []);
+
+  useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
     } catch {

@@ -8,6 +8,17 @@ export type HousekeepingEvent =
       occurredAt: string;
     }
   | {
+      type: "direct_booking_created";
+      code: string;
+      reservationId: string;
+      guestName: string;
+      roomNumber: string;
+      roomTypeName: string | null;
+      checkInDate: string;
+      checkOutDate: string;
+      occurredAt: string;
+    }
+  | {
       type: "heartbeat";
       occurredAt: string;
     };

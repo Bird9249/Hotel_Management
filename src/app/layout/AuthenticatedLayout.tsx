@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   cn,
   Loader,
@@ -14,6 +14,7 @@ import { useAuthState } from "@/modules/auth/presentation/model/useAuthState";
 import { getCookie } from "@/shared/lib/cookies";
 import { SkipToMain } from "@/shared/ui/SkipToMain";
 import { LayoutProvider } from "../providers/LayoutProvider";
+import { useNotifications } from "../providers/NotificationProvider";
 import { AppSidebar } from "./AppSidebar";
 import { sidebarData } from "./data/sidebar-data";
 import { NavGroup } from "./NavGroup";
@@ -28,12 +29,30 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie("sidebar_state") !== "false";
   const { isLoading, isAuthenticated } = useAuthState();
   const navigate = useNavigate({ from: "/app" });
+  const { devicePermission, deviceSupported, enableDeviceNotifications } =
+    useNotifications();
+  const notificationPrompted = useRef(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate({ to: "/auth/login" });
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    if (!deviceSupported || devicePermission !== "default") return;
+    if (notificationPrompted.current) return;
+
+    notificationPrompted.current = true;
+    void enableDeviceNotifications();
+  }, [
+    devicePermission,
+    deviceSupported,
+    enableDeviceNotifications,
+    isAuthenticated,
+    isLoading,
+  ]);
 
   if (isLoading) {
     return (
@@ -64,12 +83,12 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
           className={cn(
             // If layout is fixed, set the height
             // to 100svh to prevent overflow
-            "has-[[data-layout=fixed]]:h-svh",
+            "has-data-[layout=fixed]:h-svh",
 
             // If layout is fixed and sidebar is inset,
             // set the height to 100svh - 1rem (total margins) to prevent overflow
             // 'peer-data-[variant=inset]:has-[[data-layout=fixed]]:h-[calc(100svh-1rem)]',
-            "peer-data-[variant=inset]:has-[[data-layout=fixed]]:h-[calc(100svh-(var(--spacing)*4))]",
+            "peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]",
 
             // Set content container, so we can use container queries
             "@container/content",

@@ -1,18 +1,37 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { Home, Loader2, MonitorSmartphone } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useNotifications } from "@/app/providers/NotificationProvider";
 import { Button, Separator } from "@/components/kit";
 import { useAuthState } from "@/modules/auth/presentation/model/useAuthState";
 
 export function MobileShell() {
   const { isLoading, isAuthenticated } = useAuthState();
   const navigate = useNavigate({ from: "/m" });
+  const { devicePermission, deviceSupported, enableDeviceNotifications } =
+    useNotifications();
+  const notificationPrompted = useRef(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate({ to: "/auth/login" });
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    if (!deviceSupported || devicePermission !== "default") return;
+    if (notificationPrompted.current) return;
+
+    notificationPrompted.current = true;
+    void enableDeviceNotifications();
+  }, [
+    devicePermission,
+    deviceSupported,
+    enableDeviceNotifications,
+    isAuthenticated,
+    isLoading,
+  ]);
 
   if (isLoading) {
     return (

@@ -15,6 +15,7 @@
 | ฟอร์มจอง | ชื่อ, โทร, อีเมล (optional), หมายเหตุ |
 | Hold + Confirm | `inventory_hold` 15 นาที → `reservation` source=`direct_web` |
 | Confirmation | หน้า `/book/confirmation/:code` + รหัสจอง |
+| SSR Public Website | `/book/*` render HTML จาก server เพื่อ SEO และ social preview |
 | ชำระเงิน | **จ่ายที่โรงแรม** (ยังไม่รับ online payment) |
 
 **Deliverable:** ลูกค้าจองผ่าน `/book` → Reception เห็นบน Front Desk + Calendar
@@ -30,17 +31,57 @@
 
 ```
 /book                        — ค้นหา + เลือกห้อง (public)
+/book/room-types/:slug       — landing/detail room type สำหรับ SEO
 /book/checkout               — ฟอร์ม + hold
 /book/confirmation/:code     — สถานะจอง
 ```
 
 - Routes **นอก** layout `/app` (ไม่มี sidebar admin)
+- `/book/*` ใช้ SSR/hybrid public renderer ไม่ใช้ SPA fallback เปล่า ๆ
 - API public: rate limit ต่อ IP
 - Feature flag: `PUBLIC_BOOKING_ENABLED=true`
 
 ---
 
-## 3. Domain Layer
+## 3. SSR / SEO Architecture
+
+Project ปัจจุบันเป็น SPA สำหรับ Admin (`/app/*`) และควรคงไว้แบบเดิม เพื่อลดผลกระทบกับระบบหลังบ้าน
+
+แนวทาง Phase 2.3:
+
+- ทำ SSR เฉพาะ public booking routes (`/book/*`) ผ่าน Bun/Elysia server
+- Admin routes (`/app/*`, `/m/*`, `/auth/*`) ยัง serve SPA `index.html` เหมือนเดิม
+- ใช้ hybrid rendering: server render HTML/metadata ก่อน แล้ว hydrate เฉพาะส่วน interactive เช่น date picker, search result, hold countdown, checkout form
+- เพิ่ม SEO metadata: title, description, canonical, Open Graph, hotel name/logo, room type detail
+- เพิ่ม structured data (`Hotel`, `LodgingBusiness`, `Offer`) สำหรับหน้า `/book` และ `/book/room-types/:slug`
+- หน้า `/book/confirmation/:code` ควรใส่ `noindex` เพราะเป็นข้อมูลเฉพาะการจอง
+
+โครงสร้าง public SSR ที่แนะนำ:
+
+```
+src/modules/booking-engine/
+├── api/index.ts
+├── domain/
+├── presentation/
+│   ├── ssr/
+│   │   ├── render-book-page.tsx
+│   │   ├── render-room-type-page.tsx
+│   │   ├── render-confirmation-page.tsx
+│   │   └── seo.ts
+│   ├── pages/
+│   └── ui/
+└── public-entry.tsx              # hydrate เฉพาะ booking public UI
+```
+
+Server routing:
+
+- Production `index.ts`: route `/book/*` เข้า booking SSR handler ก่อน SPA fallback
+- Development `index-dev.ts`: รองรับ `/book/*` SSR หรืออย่างน้อย route ผ่าน dev handler ที่ render HTML เทียบเท่า
+- Static assets ยังใช้ build pipeline เดิม แต่เพิ่ม public booking client bundle ถ้าจำเป็น
+
+---
+
+## 4. Domain Layer
 
 ```
 src/modules/booking-engine/
@@ -57,6 +98,10 @@ src/modules/booking-engine/
 │   │   └── get-booking-by-code.ts
 │   └── http/public.routes.ts
 └── presentation/
+    ├── ssr/
+    │   ├── render-book-page.tsx
+    │   ├── render-room-type-page.tsx
+    │   └── seo.ts
     ├── pages/BookSearchPage.tsx
     ├── pages/BookCheckoutPage.tsx
     ├── pages/BookConfirmationPage.tsx
@@ -65,7 +110,7 @@ src/modules/booking-engine/
 
 ---
 
-## 4. Public API
+## 5. Public API
 
 | Method | Path | คำอธิบาย |
 |--------|------|----------|
@@ -79,15 +124,16 @@ src/modules/booking-engine/
 
 ---
 
-## 5. Branding
+## 6. Branding
 
 - ดึง `hotel_settings` (ชื่อ, โลโก้, โทร) — มีจาก MVP
 - Embed: `<iframe src="https://hotel.example/book?embed=1">` หรือ link Facebook
 - UI ภาษาลาว
+- SSR metadata ใช้ข้อมูลโรงแรมจริง เช่น ชื่อโรงแรม, โลโก้, เบอร์โทร, ที่อยู่
 
 ---
 
-## 6. Integration กับระบบ Admin
+## 7. Integration กับระบบ Admin
 
 - `reservation.source = direct_web`
 - `reservation.channelId` → `sales_channel` code `direct_web`
@@ -96,7 +142,7 @@ src/modules/booking-engine/
 
 ---
 
-## 7. Environment & Deploy
+## 8. Environment & Deploy
 
 ```env
 PUBLIC_BOOKING_ENABLED=true
@@ -108,26 +154,33 @@ SMTP_FROM=
 ```
 
 - Nginx: expose `/book` และ `/api/public/*` ไม่ต้อง auth
+- Nginx/cache: ห้าม cache checkout/confirmation ที่มีข้อมูลส่วนบุคคล
+- SEO: ตรวจ `robots.txt`, canonical URL, sitemap entry สำหรับ `/book` และ room type pages
 - อัปเดต `deploy/group_vars/prod.yml` sync env keys
 
 ---
 
-## 8. Tasks
+## 9. Tasks
 
-- [ ] โมดูล `booking-engine` + public routes
-- [ ] `search-availability` → Phase 2.0 service
-- [ ] Hold + confirm flow + release hold
-- [ ] UI `/book`, `/book/checkout`, `/book/confirmation/:code`
-- [ ] Rate limit + honeypot
-- [ ] Seed/migration `sales_channel` `direct_web`
-- [ ] Badge source บน Front Desk / Calendar
+- [x] SSR public booking renderer สำหรับ `/book/*`
+- [x] SEO metadata + Open Graph + structured data
+- [x] โมดูล `booking-engine` + public routes
+- [x] `search-availability` → Phase 2.0 service
+- [x] Hold + confirm flow + release hold
+- [x] UI `/book`, `/book/checkout`, `/book/confirmation/:code`
+- [x] Public booking client hydration สำหรับ interactive form/search
+- [x] Rate limit + honeypot
+- [x] Seed/migration `sales_channel` `direct_web`
+- [x] Badge source บน Front Desk / Calendar
 - [ ] Email confirmation (optional)
 
 ---
 
-## 9. Definition of Done (Phase 2.3)
+## 10. Definition of Done (Phase 2.3)
 
-- [ ] ลูกค้าจองผ่าน `/book` สำเร็จ → เห็นบน Front Desk + Calendar
-- [ ] Hold หมดอายุแล้ว slot ว่างอีกครั้ง
-- [ ] จอง direct ไม่ทำให้ Front Desk overbook (ใช้ inventory เดียวกับ 2.0)
-- [ ] `PUBLIC_BOOKING_ENABLED=false` แล้วปิด public routes ได้
+- [x] View source ของ `/book` เห็น HTML content + meta/OG โดยไม่ต้องรอ JS
+- [x] ลูกค้าจองผ่าน `/book` สำเร็จ → เห็นบน Front Desk + Calendar
+- [x] Hold หมดอายุแล้ว slot ว่างอีกครั้ง
+- [x] จอง direct ไม่ทำให้ Front Desk overbook (ใช้ inventory เดียวกับ 2.0)
+- [x] `PUBLIC_BOOKING_ENABLED=false` แล้วปิด public routes ได้
+- [x] `/book/confirmation/:code` เป็น `noindex` และไม่ cache ข้อมูลลูกค้า

@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
   BedDouble,
-  Bell,
   BrushCleaning,
   CheckCircle2,
   Clock3,
@@ -33,10 +32,7 @@ import {
 } from "@/components/kit";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
 import type { HkTaskDTO } from "@/modules/housekeeping/domain/types";
-import {
-  useBrowserNotificationPermission,
-  useHousekeepingEvents,
-} from "@/modules/housekeeping/presentation/api/events";
+import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
 import {
   useCloseHkShift,
   useCurrentHkShiftQuery,
@@ -97,10 +93,9 @@ function EmptyState({
 
 export function HousekeepingPage() {
   const [closeDialog, setCloseDialog] = useState(false);
-  const notification = useBrowserNotificationPermission({ autoRequest: true });
   useHousekeepingEvents(true, {
     notifyCleaning: true,
-    osNotifyCleaning: notification.isGranted,
+    osNotifyCleaning: true,
   });
   const shift = useCurrentHkShiftQuery();
   const tasks = useHkTasksQuery();
@@ -197,16 +192,6 @@ export function HousekeepingPage() {
             </div>
           </CardContent>
           <CardContent className="flex flex-wrap gap-2 border-t pt-4">
-            {notification.canRequest && (
-              <Button
-                className="w-full sm:w-auto"
-                onClick={notification.requestPermission}
-                variant="outline"
-              >
-                <Bell className="size-4" />
-                ເປີດແຈ້ງເຕືອນ
-              </Button>
-            )}
             <Button asChild className="w-full sm:w-auto" variant="outline">
               <Link to="/m/housekeeping">ເປີດໃນໂທລະສັບ</Link>
             </Button>

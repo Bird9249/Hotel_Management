@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
+import { useNotifications } from "@/app/providers/NotificationProvider";
 import { toast } from "@/components/kit";
 import { reservationsKeys } from "@/modules/reservations/presentation/api/queries";
 import { roomsKeys } from "@/modules/rooms/presentation/api/queries";
@@ -14,23 +15,23 @@ type HousekeepingRoomStatusEvent = {
   occurredAt: string;
 };
 
+type DirectBookingCreatedEvent = {
+  type: "direct_booking_created";
+  code: string;
+  reservationId: string;
+  guestName: string;
+  roomNumber: string;
+  roomTypeName: string | null;
+  checkInDate: string;
+  checkOutDate: string;
+  occurredAt: string;
+};
+
 type UseHousekeepingEventsOptions = {
+  notifyDirectBooking?: boolean;
   notifyCleaning?: boolean;
   osNotifyCleaning?: boolean;
 };
-
-type BrowserNotificationPermission = NotificationPermission | "unsupported";
-
-type UseBrowserNotificationPermissionOptions = {
-  autoRequest?: boolean;
-};
-
-function getBrowserNotificationPermission(): BrowserNotificationPermission {
-  if (typeof window === "undefined" || !("Notification" in window)) {
-    return "unsupported";
-  }
-  return Notification.permission;
-}
 
 function showCleaningNotification(event: HousekeepingRoomStatusEvent) {
   if (
@@ -52,55 +53,12 @@ function showCleaningNotification(event: HousekeepingRoomStatusEvent) {
   });
 }
 
-export function useBrowserNotificationPermission(
-  options: UseBrowserNotificationPermissionOptions = {},
-) {
-  const [permission, setPermission] = useState<BrowserNotificationPermission>(
-    () => getBrowserNotificationPermission(),
-  );
-  const autoRequested = useRef(false);
-
-  const requestPermission = useCallback(async () => {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      setPermission("unsupported");
-      toast.error("Browser ນີ້ບໍ່ຮອງຮັບ OS notification");
-      return;
-    }
-
-    const next = await Notification.requestPermission();
-    setPermission(next);
-
-    if (next === "granted") {
-      toast.success("ເປີດແຈ້ງເຕືອນສຳເລັດ");
-    } else if (next === "denied") {
-      toast.error("ບໍ່ສາມາດເປີດແຈ້ງເຕືອນໄດ້", {
-        description: "ກະລຸນາອະນຸຍາດ Notification ໃນ browser settings",
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!options.autoRequest || autoRequested.current) return;
-    if (permission !== "default") return;
-
-    autoRequested.current = true;
-    void requestPermission();
-  }, [options.autoRequest, permission, requestPermission]);
-
-  return {
-    canRequest: permission === "default",
-    isGranted: permission === "granted",
-    isSupported: permission !== "unsupported",
-    permission,
-    requestPermission,
-  };
-}
-
 export function useHousekeepingEvents(
   enabled = true,
   options: UseHousekeepingEventsOptions = {},
 ) {
   const qc = useQueryClient();
+  const { notify } = useNotifications();
 
   useEffect(() => {
     if (!enabled) return;
@@ -130,14 +88,48 @@ export function useHousekeepingEvents(
       }
     };
 
+    const handleDirectBookingCreated = (message: MessageEvent<string>) => {
+      const event = JSON.parse(message.data) as DirectBookingCreatedEvent;
+      qc.invalidateQueries({ queryKey: reservationsKeys.all });
+      qc.invalidateQueries({ queryKey: roomsKeys.all });
+
+      if (options.notifyDirectBooking) {
+        const description = `${event.guestName} · ຫ້ອງ ${event.roomNumber} · ${event.code}`;
+        toast.info("ມີການຈອງໃໝ່ຈາກເວັບ", {
+          description,
+        });
+        notify({
+          title: "ມີການຈອງໃໝ່ຈາກເວັບ",
+          description,
+          type: "success",
+          to: "/app/front-desk",
+        });
+      }
+    };
+
     source.addEventListener("room_status_changed", handleRoomStatusChanged);
+    source.addEventListener(
+      "direct_booking_created",
+      handleDirectBookingCreated,
+    );
 
     return () => {
       source.removeEventListener(
         "room_status_changed",
         handleRoomStatusChanged,
       );
+      source.removeEventListener(
+        "direct_booking_created",
+        handleDirectBookingCreated,
+      );
       source.close();
     };
-  }, [enabled, options.notifyCleaning, options.osNotifyCleaning, qc]);
+  }, [
+    enabled,
+    options.notifyCleaning,
+    options.notifyDirectBooking,
+    options.osNotifyCleaning,
+    notify,
+    qc,
+  ]);
 }

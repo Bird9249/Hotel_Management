@@ -40,7 +40,7 @@ function buildTodayFilters(tab: DeskTab, today: string): FilterConditionDTO[] {
 
 export function FrontDeskPageContent() {
   const nav = useNavigate();
-  useHousekeepingEvents();
+  useHousekeepingEvents(true, { notifyDirectBooking: true });
   const today = todayIso();
   const [tab, setTab] = useState<DeskTab>("arrivals");
   const checkIn = useCheckIn();

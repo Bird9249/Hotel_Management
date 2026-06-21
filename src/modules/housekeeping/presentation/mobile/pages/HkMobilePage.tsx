@@ -1,4 +1,4 @@
-import { Bell, BrushCleaning, CheckCircle2, RefreshCw } from "lucide-react";
+import { BrushCleaning, CheckCircle2, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   Button,
@@ -14,10 +14,7 @@ import {
 } from "@/components/kit";
 import { useActionPermission } from "@/modules/auth/presentation/model/useActionPermission";
 import type { HkTaskDTO } from "@/modules/housekeeping/domain/types";
-import {
-  useBrowserNotificationPermission,
-  useHousekeepingEvents,
-} from "../../api/events";
+import { useHousekeepingEvents } from "../../api/events";
 import {
   useCloseHkShift,
   useCurrentHkShiftQuery,
@@ -56,10 +53,9 @@ export function HkMobilePage() {
   const [filter, setFilter] = useState<HkMobileTaskFilter>("pending");
   const canManageShift = useActionPermission(["housekeeping:shift"]);
   const canManageTasks = useActionPermission(["housekeeping:task"]);
-  const notification = useBrowserNotificationPermission({ autoRequest: true });
   useHousekeepingEvents(true, {
     notifyCleaning: true,
-    osNotifyCleaning: notification.isGranted,
+    osNotifyCleaning: true,
   });
 
   const shift = useCurrentHkShiftQuery(true, MOBILE_REFETCH_INTERVAL_MS);
@@ -126,26 +122,14 @@ export function HkMobilePage() {
           </div>
           <p className="text-muted-foreground text-sm">ອັບເດດຫ້ອງພັກຈາກມືຖືໄດ້ທັນທີ</p>
         </div>
-        <div className="flex gap-2">
-          {notification.canRequest && (
-            <Button
-              className="size-11"
-              onClick={notification.requestPermission}
-              size="icon"
-              variant="outline"
-            >
-              <Bell />
-            </Button>
-          )}
-          <Button
-            className="size-11"
-            onClick={refresh}
-            size="icon"
-            variant="outline"
-          >
-            <RefreshCw />
-          </Button>
-        </div>
+        <Button
+          className="size-11"
+          onClick={refresh}
+          size="icon"
+          variant="outline"
+        >
+          <RefreshCw />
+        </Button>
       </section>
 
       <HkShiftBarMobile

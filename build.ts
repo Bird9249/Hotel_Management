@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
-import plugin from "bun-plugin-tailwind";
 import { existsSync } from "node:fs";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
+import plugin from "bun-plugin-tailwind";
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(`
@@ -140,6 +140,16 @@ const serviceWorkerEntrypoints = ["service-worker.ts", "service-worker.js"]
   .map((file) => path.resolve("src", file))
   .filter((entry) => existsSync(entry));
 
+const publicBookingEntrypoints = [
+  path.resolve(
+    "src",
+    "modules",
+    "booking-engine",
+    "presentation",
+    "public-booking-entry.tsx",
+  ),
+].filter((entry) => existsSync(entry));
+
 if (serviceWorkerEntrypoints.length > 0) {
   console.log(
     `🛠️ Including ${serviceWorkerEntrypoints.length} service worker ${
@@ -148,7 +158,11 @@ if (serviceWorkerEntrypoints.length > 0) {
   );
 }
 
-const entrypoints = [...htmlEntrypoints, ...serviceWorkerEntrypoints];
+const entrypoints = [
+  ...htmlEntrypoints,
+  ...serviceWorkerEntrypoints,
+  ...publicBookingEntrypoints,
+];
 
 const result = await Bun.build({
   entrypoints,

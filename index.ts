@@ -1,6 +1,7 @@
-import { serve } from "bun";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { serve } from "bun";
+import { renderBookingPage } from "@/modules/booking-engine/presentation/ssr/render";
 import compliedApp from "./out/server/main";
 
 // Helper function to find file with hash pattern in production
@@ -53,6 +54,9 @@ function serveStaticFile(url: string) {
 const serviceWorkerFile = findHashedFile("service-worker", "js");
 const manifestFile = findHashedFile("manifest", "webmanifest");
 const indexFile = findHashedFile("index", "html");
+const compiledFetch = (
+  compliedApp as { fetch: (request: Request) => Response | Promise<Response> }
+).fetch;
 
 const server = serve({
   idleTimeout: 20,
@@ -69,7 +73,9 @@ const server = serve({
       },
     }),
 
-    "/api/*": compliedApp.fetch,
+    "/api/*": compiledFetch,
+    "/book": (req) => renderBookingPage(req),
+    "/book/*": (req) => renderBookingPage(req),
 
     // Serve static files from dist/ before other routes
     "/*": (req) => {

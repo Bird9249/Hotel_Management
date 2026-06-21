@@ -1,17 +1,3 @@
-import type { DateRange } from "@/components/date-picker";
-import { DatePicker } from "@/components/date-picker";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  Skeleton,
-  cn,
-} from "@/components/kit";
-import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
-import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
-import type { RoomAvailabilityItem } from "@/modules/reservations/domain/types";
-import { SimpleSelect } from "@/shared/ui/SimpleSelect";
 import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 import {
   BedDouble,
@@ -25,7 +11,21 @@ import {
   Wrench,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
+import type { DateRange } from "@/components/date-picker";
+import { DatePicker } from "@/components/date-picker";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  cn,
+  Skeleton,
+} from "@/components/kit";
+import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
+import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
+import type { RoomAvailabilityItem } from "@/modules/reservations/domain/types";
+import { SimpleSelect } from "@/shared/ui/SimpleSelect";
 import { useAvailabilityQuery } from "../api/queries";
 
 type BookingCalendarProps = {
@@ -97,7 +97,7 @@ export function BookingCalendar({
   const rangeReady = Boolean(from && to && to > from);
 
   const availability = useAvailabilityQuery(rangeReady ? { from, to } : null);
-  useHousekeepingEvents(rangeReady);
+  useHousekeepingEvents(rangeReady, { notifyDirectBooking: true });
 
   const allRooms: RoomAvailabilityItem[] = availability.data?.rooms ?? [];
 
