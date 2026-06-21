@@ -236,6 +236,20 @@ const ChannelsSettingsPage = lazy(() =>
     }),
   ),
 );
+const ChannelDetailPage = lazy(() =>
+  import("@/modules/channels/presentation/pages/ChannelDetailPage").then(
+    (module) => ({
+      default: module.ChannelDetailPage,
+    }),
+  ),
+);
+const ChannelLogsPage = lazy(() =>
+  import("@/modules/channels/presentation/pages/ChannelLogsPage").then(
+    (module) => ({
+      default: module.ChannelLogsPage,
+    }),
+  ),
+);
 const PublicVerifyLayout = lazy(() =>
   import("./layout/PublicVerifyLayout").then((module) => ({
     default: module.PublicVerifyLayout,
@@ -667,6 +681,30 @@ const channelsRoute = createRoute({
   ),
 });
 
+const channelDetailRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/channels/$id",
+  component: () => (
+    <RequirePermissions all={["channels:read"]}>
+      <LazyPage>
+        <ChannelDetailPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
+const channelLogsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/channels/$id/logs",
+  component: () => (
+    <RequirePermissions all={["channels:read"]}>
+      <LazyPage>
+        <ChannelLogsPage />
+      </LazyPage>
+    </RequirePermissions>
+  ),
+});
+
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors/forbidden",
@@ -731,6 +769,8 @@ export const routeTree = rootRoute.addChildren([
     cashShiftsRoute,
     reportsRoute,
     channelsRoute,
+    channelDetailRoute,
+    channelLogsRoute,
   ]),
   forbiddenRoute,
 ]);

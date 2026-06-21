@@ -7,6 +7,7 @@ import { Button } from "@/components/kit";
 import { QueryState } from "@/shared/ui/QueryState";
 import { useReservationQuery, useUpdateReservation } from "../api/queries";
 import { ReservationForm } from "../ui/ReservationForm";
+import { toReservationSourceKey } from "../ui/reservation-sources";
 
 export function ReservationEditPage() {
   const nav = useNavigate({ from: "/app/reservations/$id/edit" });
@@ -44,6 +45,7 @@ export function ReservationEditPage() {
                 initialValues={{
                   guestId: data.guestId,
                   roomId: data.roomId,
+                  sourceKey: toReservationSourceKey(data.source, data.channelId),
                   guestsCount: data.guestsCount,
                   dateRange: {
                     from: parseISO(data.checkInDate),

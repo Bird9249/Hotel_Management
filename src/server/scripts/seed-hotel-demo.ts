@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
 
 import { addDays, format, subHours } from "date-fns";
-import { eq } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
 import { db } from "@/server/platform/db/client";
 import { user } from "@/server/platform/db/schema/auth";
 import {
   channelRoomMapping,
+  channelSyncLog,
   salesChannel,
 } from "@/server/platform/db/schema/channels";
 import { guest } from "@/server/platform/db/schema/hotel-guests";
@@ -47,25 +48,20 @@ const DEMO_ROOM_TYPES = [
 
 const DEMO_CHANNELS = [
   {
-    id: "channel_direct_web",
-    code: "direct_web",
-    name: "Direct Booking",
-    isActive: true,
-    config: {},
-  },
-  {
     id: "channel_agoda",
     code: "agoda",
     name: "Agoda",
-    isActive: false,
-    config: {},
+    isActive: true,
+    config: { adapter: "mock_ota", consecutiveFailures: 0 },
+    lastSyncAt: subHours(new Date(), 1),
   },
   {
     id: "channel_booking_com",
     code: "booking_com",
     name: "Booking.com",
-    isActive: false,
-    config: {},
+    isActive: true,
+    config: { adapter: "booking_com_mock", consecutiveFailures: 0 },
+    lastSyncAt: subHours(new Date(), 2),
   },
   {
     id: "channel_expedia",
@@ -77,27 +73,6 @@ const DEMO_CHANNELS = [
 ] as const;
 
 const DEMO_CHANNEL_MAPPINGS = [
-  {
-    id: `${DEMO_PREFIX}mapping-direct-standard`,
-    channelId: "channel_direct_web",
-    roomTypeId: `${DEMO_PREFIX}room-type-standard`,
-    externalRoomTypeId: "direct-standard",
-    allotment: null,
-  },
-  {
-    id: `${DEMO_PREFIX}mapping-direct-deluxe`,
-    channelId: "channel_direct_web",
-    roomTypeId: `${DEMO_PREFIX}room-type-deluxe`,
-    externalRoomTypeId: "direct-deluxe",
-    allotment: null,
-  },
-  {
-    id: `${DEMO_PREFIX}mapping-direct-suite`,
-    channelId: "channel_direct_web",
-    roomTypeId: `${DEMO_PREFIX}room-type-suite`,
-    externalRoomTypeId: "direct-suite",
-    allotment: null,
-  },
   {
     id: `${DEMO_PREFIX}mapping-agoda-deluxe`,
     channelId: "channel_agoda",
@@ -111,6 +86,27 @@ const DEMO_CHANNEL_MAPPINGS = [
     roomTypeId: `${DEMO_PREFIX}room-type-standard`,
     externalRoomTypeId: "BDC-STD-001",
     allotment: 1,
+  },
+] as const;
+
+const DEMO_SYNC_LOGS = [
+  {
+    id: `${DEMO_PREFIX}sync-agoda-success`,
+    channelId: "channel_agoda",
+    direction: "push",
+    operation: "availability",
+    status: "success",
+    requestSummary: { from: isoDate(new Date()), pushedCount: 1 },
+    errorMessage: null,
+  },
+  {
+    id: `${DEMO_PREFIX}sync-booking-success`,
+    channelId: "channel_booking_com",
+    direction: "push",
+    operation: "availability",
+    status: "success",
+    requestSummary: { from: isoDate(new Date()), pushedCount: 1 },
+    errorMessage: null,
   },
 ] as const;
 
@@ -241,7 +237,7 @@ function buildDemoReservations(today: Date) {
       guestsCount: 2,
       status: "booked",
       source: "direct_web",
-      channelId: "channel_direct_web",
+      channelId: null,
       externalBookingId: `${DEMO_PREFIX}direct-101-upcoming`,
     },
     {
@@ -289,7 +285,7 @@ function buildDemoReservations(today: Date) {
       guestsCount: 4,
       status: "booked",
       source: "direct_web",
-      channelId: "channel_direct_web",
+      channelId: null,
       externalBookingId: `${DEMO_PREFIX}direct-202-suite`,
     },
     {
@@ -325,7 +321,7 @@ function buildDemoReservations(today: Date) {
       guestsCount: 4,
       status: "checked_out",
       source: "direct_web",
-      channelId: "channel_direct_web",
+      channelId: null,
       externalBookingId: `${DEMO_PREFIX}direct-done-2`,
     },
   ] as const;
@@ -346,7 +342,27 @@ async function seedHotelDemo() {
       await tx
         .insert(salesChannel)
         .values([...DEMO_CHANNELS])
-        .onConflictDoNothing({ target: salesChannel.code });
+        .onConflictDoUpdate({
+          target: salesChannel.code,
+          set: {
+            name: sql`excluded.name`,
+            isActive: sql`excluded.is_active`,
+            config: sql`excluded.config`,
+            lastSyncAt: sql`excluded.last_sync_at`,
+          },
+        });
+
+      logger.info("Removing legacy direct_web sales channel...");
+      await tx
+        .update(reservation)
+        .set({ channelId: null })
+        .where(eq(reservation.source, "direct_web"));
+      await tx.delete(salesChannel).where(eq(salesChannel.code, "direct_web"));
+
+      logger.info("Clearing previous demo sync logs...");
+      await tx
+        .delete(channelSyncLog)
+        .where(like(channelSyncLog.id, `${DEMO_PREFIX}%`));
 
       logger.info("Seeding room types...");
       await tx.insert(roomType).values([...DEMO_ROOM_TYPES]);
@@ -359,6 +375,9 @@ async function seedHotelDemo() {
 
       logger.info("Seeding channel room mappings...");
       await tx.insert(channelRoomMapping).values([...DEMO_CHANNEL_MAPPINGS]);
+
+      logger.info("Seeding channel sync logs...");
+      await tx.insert(channelSyncLog).values([...DEMO_SYNC_LOGS]);
 
       logger.info("Seeding reservations...");
       await tx.insert(reservation).values([...demoReservations]);
@@ -399,7 +418,7 @@ async function seedHotelDemo() {
       `  Room types: ${DEMO_ROOM_TYPES.length}, Rooms: ${DEMO_ROOMS.length}, Guests: ${DEMO_GUESTS.length}, Reservations: ${demoReservations.length}`,
     );
     logger.info(
-      `  Channels: ${DEMO_CHANNELS.length}, Mappings: ${DEMO_CHANNEL_MAPPINGS.length}`,
+      `  Channels: ${DEMO_CHANNELS.length}, Mappings: ${DEMO_CHANNEL_MAPPINGS.length}, Sync logs: ${DEMO_SYNC_LOGS.length}`,
     );
     logger.info(
       "  Housekeeping: open shift + cleaning room tasks seeded when a user exists",

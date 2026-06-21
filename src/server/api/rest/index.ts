@@ -5,6 +5,7 @@ import { billingRoutes } from "@/modules/billing/api";
 import { billingPublicRoutes } from "@/modules/billing/api/public";
 import { bookingEnginePublicRoutes } from "@/modules/booking-engine/api";
 import { channelsRoutes } from "@/modules/channels/api";
+import { channelsWebhookRoutes } from "@/modules/channels/api/webhooks";
 import { guestsRoutes } from "@/modules/guests/api";
 import { housekeepingRoutes } from "@/modules/housekeeping/api";
 import { reportsRoutes } from "@/modules/reports/api";
@@ -22,6 +23,7 @@ export function createRestRoutes() {
     .use(rolesRoutes)
     .use(roomsRoutes)
     .use(channelsRoutes)
+    .use(channelsWebhookRoutes)
     .use(guestsRoutes)
     .use(housekeepingRoutes)
     .use(reservationsRoutes)

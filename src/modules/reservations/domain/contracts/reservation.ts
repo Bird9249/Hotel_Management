@@ -7,6 +7,15 @@ export const ReservationStatusSchema = z.enum([
   "cancelled",
 ]);
 
+export const ReservationSourceSchema = z.enum([
+  "front_desk",
+  "direct_web",
+  "agoda",
+  "booking_com",
+  "expedia",
+  "other",
+]);
+
 export const ReservationCreateSchema = z
   .object({
     guestId: z.string().min(1),
@@ -14,6 +23,8 @@ export const ReservationCreateSchema = z
     checkInDate: z.string().min(1),
     checkOutDate: z.string().min(1),
     guestsCount: z.number().int().min(1).default(1),
+    source: ReservationSourceSchema.default("front_desk"),
+    channelId: z.string().nullable().optional(),
   })
   .refine((v) => v.checkOutDate > v.checkInDate, {
     message: "checkOutDate must be after checkInDate",
@@ -27,6 +38,8 @@ export const ReservationUpdateSchema = z
     checkInDate: z.string().min(1).optional(),
     checkOutDate: z.string().min(1).optional(),
     guestsCount: z.number().int().min(1).optional(),
+    source: ReservationSourceSchema.optional(),
+    channelId: z.string().nullable().optional(),
   })
   .refine(
     (v) => {
@@ -50,6 +63,7 @@ export const AvailabilityQuerySchema = z.object({
 });
 
 export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
+export type ReservationSource = z.infer<typeof ReservationSourceSchema>;
 export type ReservationCreateInput = z.infer<typeof ReservationCreateSchema>;
 export type ReservationUpdateInput = z.infer<typeof ReservationUpdateSchema>;
 export type AvailabilityQueryDTO = z.infer<typeof AvailabilityQuerySchema>;

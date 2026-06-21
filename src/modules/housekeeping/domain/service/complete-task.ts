@@ -1,4 +1,5 @@
 import { updateRoomStatus } from "@/modules/rooms/domain/repo/update-room-status";
+import { getRoomById } from "@/modules/rooms/domain/repo/get-room-by-id";
 import type { DbTransaction } from "@/shared/types";
 import type { HkTaskUpdateInput } from "../contracts";
 import { publishHousekeepingEvent } from "../events/housekeeping-events";
@@ -29,9 +30,11 @@ export async function updateHkTaskService(
 
   if (params.input.status === "done") {
     await updateRoomStatus(before.roomId, "available", client);
+    const room = await getRoomById(before.roomId, client);
     publishHousekeepingEvent({
       type: "room_status_changed",
       roomId: before.roomId,
+      roomNumber: room?.roomNumber,
       status: "available",
       taskId: params.id,
       occurredAt: new Date().toISOString(),

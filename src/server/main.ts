@@ -1,6 +1,8 @@
+import { startChannelAvailabilitySyncJob } from "@/modules/channels/domain/jobs/availability-sync-job";
 import { createServer } from "./platform/http/server";
 
 const app = createServer();
+startChannelAvailabilitySyncJob();
 
 // auth.api.createUser({
 //   body: {

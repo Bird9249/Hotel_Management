@@ -85,7 +85,10 @@ export function GuestsTable({
       sortBy={sortBy}
       sortOrder={sortOrder}
       onPaginationChange={onPaginationChange}
-      onSortingChange={onSortingChange}
+      onSortingChange={(sorting) => {
+        if (!sorting[0]) return;
+        onSortingChange(sorting[0].id, sorting[0].desc);
+      }}
     />
   );
 }

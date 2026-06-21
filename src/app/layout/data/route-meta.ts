@@ -50,6 +50,11 @@ export const routeMeta: Record<string, RouteMeta> = {
   "/app/cash-shifts": { label: "ກະເງິນສົດ" },
   "/app/reports": { label: "ລາຍງານ" },
   "/app/channels": { label: "ຊ່ອງທາງການຂາຍ" },
+  "/app/channels/$id": { label: "ລາຍລະອຽດ channel", parent: "/app/channels" },
+  "/app/channels/$id/logs": {
+    label: "Sync logs",
+    parent: "/app/channels/$id",
+  },
   "/app/profile": { label: "ໂປຣໄຟລ໌" },
   "/app/settings": { label: "ການຕັ້ງຄ່າ" },
 };

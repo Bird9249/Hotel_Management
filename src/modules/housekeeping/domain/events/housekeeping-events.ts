@@ -19,6 +19,20 @@ export type HousekeepingEvent =
       occurredAt: string;
     }
   | {
+      type: "channel_reservation_imported";
+      channelCode: string;
+      channelName: string;
+      externalBookingId: string;
+      reservationId: string | null;
+      guestName: string;
+      roomNumber: string | null;
+      roomTypeName: string | null;
+      checkInDate: string;
+      checkOutDate: string;
+      action: "created" | "updated" | "cancelled";
+      occurredAt: string;
+    }
+  | {
       type: "heartbeat";
       occurredAt: string;
     };

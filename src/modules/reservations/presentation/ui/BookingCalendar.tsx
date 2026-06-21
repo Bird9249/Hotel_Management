@@ -23,7 +23,6 @@ import {
   Skeleton,
 } from "@/components/kit";
 import { ReservationSourceBadge } from "@/modules/channels/presentation/ui/ReservationSourceBadge";
-import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
 import type { RoomAvailabilityItem } from "@/modules/reservations/domain/types";
 import { SimpleSelect } from "@/shared/ui/SimpleSelect";
 import { useAvailabilityQuery } from "../api/queries";
@@ -97,7 +96,6 @@ export function BookingCalendar({
   const rangeReady = Boolean(from && to && to > from);
 
   const availability = useAvailabilityQuery(rangeReady ? { from, to } : null);
-  useHousekeepingEvents(rangeReady, { notifyDirectBooking: true });
 
   const allRooms: RoomAvailabilityItem[] = availability.data?.rooms ?? [];
 

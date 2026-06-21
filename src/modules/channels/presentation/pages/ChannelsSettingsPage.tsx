@@ -1,5 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { RefreshCw } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
@@ -153,6 +154,7 @@ export function ChannelsSettingsPage() {
                     <TableHead>Code</TableHead>
                     <TableHead>ສະຖານະ</TableHead>
                     <TableHead>Last sync</TableHead>
+                    <TableHead className="w-[120px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -193,11 +195,23 @@ export function ChannelsSettingsPage() {
                       <TableCell>
                         {formatDateTime(channel.lastSyncAt)}
                       </TableCell>
+                      <TableCell>
+                        <Button asChild size="sm" variant="outline">
+                          <Link
+                            to="/app/channels/$id"
+                            params={{ id: channel.id }}
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <ExternalLink data-icon="inline-start" />
+                            ຈັດການ
+                          </Link>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                   {!channelRows.length && (
                     <TableRow>
-                      <TableCell colSpan={4} className="py-8 text-center">
+                      <TableCell colSpan={5} className="py-8 text-center">
                         <Empty>
                           <EmptyHeader>
                             <EmptyTitle>ຍັງບໍ່ມີ channel</EmptyTitle>

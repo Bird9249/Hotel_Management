@@ -16,6 +16,7 @@ export type ReservationDetailRow = {
   guestsCount: number;
   status: string;
   source: string;
+  channelId: string | null;
   createdAt: Date;
 };
 
@@ -35,6 +36,7 @@ export async function getReservationById(
       guestsCount: reservation.guestsCount,
       status: reservation.status,
       source: reservation.source,
+      channelId: reservation.channelId,
       createdAt: reservation.createdAt,
     })
     .from(reservation)

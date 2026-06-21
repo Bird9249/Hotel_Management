@@ -1,6 +1,9 @@
 import { Elysia } from "elysia";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
-import { requirePermission } from "@/modules/roles/domain/http/middleware";
+import {
+  requireAnyPermission,
+  requirePermission,
+} from "@/modules/roles/domain/http/middleware";
 import { runInTransaction } from "@/server/platform/db/transaction";
 import { serverContext } from "@/server/platform/http/context";
 import { OffsetPageQuerySchema } from "@/shared/contracts/base";
@@ -78,7 +81,11 @@ export const hotelHousekeepingRoutes = new Elysia()
       });
     },
     {
-      beforeHandle: requirePermission(Permissions.housekeeping.read),
+      beforeHandle: requireAnyPermission(
+        Permissions.housekeeping.read,
+        Permissions.reservations.read,
+        Permissions.channels.read,
+      ),
     },
   )
   .get(

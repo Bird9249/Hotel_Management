@@ -19,15 +19,22 @@ import type {
   ReservationCreateInput,
   ReservationUpdateInput,
 } from "@/modules/reservations/domain/contracts";
+import { useChannelsQuery } from "@/modules/channels/presentation/api/queries";
 import { useRoomsQuery } from "@/modules/rooms/presentation/api/queries";
 import { config } from "@/shared/lib/config";
 import { fetchLookupForInfinite, hydrateLookupItem } from "@/shared/lib/utils";
 import { SimpleSelect } from "@/shared/ui/SimpleSelect";
+import {
+  RESERVATION_SOURCE_LABELS,
+  resolveReservationSource,
+  STATIC_RESERVATION_SOURCE_KEYS,
+} from "./reservation-sources";
 
 const ReservationFormSchema = z
   .object({
     guestId: z.string().min(1, "ຕ້ອງເລືອກລູກຄ້າ"),
     roomId: z.string().min(1, "ຕ້ອງເລືອກຫ້ອງ"),
+    sourceKey: z.string().min(1, "ຕ້ອງເລືອກຊ່ອງທາງ"),
     dateRange: z.object({
       from: z.date().optional(),
       to: z.date().optional(),
@@ -67,12 +74,14 @@ export function ReservationForm({
   submitting?: boolean;
 }) {
   const rooms = useRoomsQuery({ limit: 200, offset: 0 });
+  const channels = useChannelsQuery();
 
   const methods = RHF.useForm<ReservationFormValues>({
     resolver: zodResolver(ReservationFormSchema),
     defaultValues: {
       guestId: "",
       roomId: "",
+      sourceKey: "front_desk",
       dateRange: { from: undefined, to: undefined },
       guestsCount: 1,
       ...initialValues,
@@ -81,18 +90,35 @@ export function ReservationForm({
 
   const roomId = methods.watch("roomId");
   const selectedRoom = rooms.data?.data.find((r) => r.id === roomId);
+  const channelOptions = channels.data ?? [];
+  const sourceOptions = [
+    ...STATIC_RESERVATION_SOURCE_KEYS.map((key) => ({
+      value: key,
+      label: RESERVATION_SOURCE_LABELS[key] ?? key,
+    })),
+    ...channelOptions.map((channel) => ({
+      value: channel.id,
+      label: channel.name,
+    })),
+  ];
 
   return (
     <FormRoot<ReservationFormValues>
       methods={methods}
       onSubmit={(vals) => {
         if (!vals.dateRange.from || !vals.dateRange.to) return;
+        const { source, channelId } = resolveReservationSource(
+          vals.sourceKey,
+          channelOptions,
+        );
         onSubmit({
           guestId: vals.guestId,
           roomId: vals.roomId,
           checkInDate: toIsoDate(vals.dateRange.from),
           checkOutDate: toIsoDate(vals.dateRange.to),
           guestsCount: vals.guestsCount,
+          source,
+          channelId,
         });
       }}
       className="gap-6"
@@ -130,6 +156,22 @@ export function ReservationForm({
           getValue={(item) => item.id}
           placeholder="ຄົ້ນຫາລູກຄ້າ..."
         />
+
+        <Field name="sourceKey" label="ຊ່ອງທາງ" requiredMark>
+          <Controller
+            control={methods.control}
+            name="sourceKey"
+            render={({ field }) => (
+              <SimpleSelect
+                value={field.value}
+                onValueChange={field.onChange}
+                placeholder="ເລືອກຊ່ອງທາງ"
+                options={sourceOptions}
+                className="w-full"
+              />
+            )}
+          />
+        </Field>
 
         <Field name="roomId" label="ຫ້ອງ" requiredMark>
           <Controller

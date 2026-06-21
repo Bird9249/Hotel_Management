@@ -16,3 +16,10 @@ export function requirePermission(permId: PermissionId) {
       return status(403, { error: "Forbidden" });
   };
 }
+
+export function requireAnyPermission(...permIds: PermissionId[]) {
+  return ({ permissions, status }: GuardCtx) => {
+    if (!permIds.some((id) => permissions?.includes(id)))
+      return status(403, { error: "Forbidden" });
+  };
+}

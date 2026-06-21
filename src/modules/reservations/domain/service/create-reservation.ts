@@ -27,7 +27,8 @@ export async function createReservationService(
       checkOutDate: params.input.checkOutDate,
       guestsCount: params.input.guestsCount,
       status: "booked",
-      source: "front_desk",
+      source: params.input.source ?? "front_desk",
+      channelId: params.input.channelId ?? null,
     },
     client,
   );

@@ -47,7 +47,6 @@ export interface ChannelAdapter {
 ```
 
 Implementations:
-- `adapters/direct-web.adapter.ts` — no-op push
 - `adapters/channex.adapter.ts` หรือ `adapters/mock-ota.adapter.ts`
 
 ---
@@ -125,24 +124,63 @@ WEBHOOK_SECRET_CHANNELS=
 - Nginx route `/api/webhooks/channels/*`
 - Runbook setup credential ใน Admin UI / `.env`
 
+### Demo webhook (Booking.com)
+
+```bash
+curl -X POST http://localhost:3000/api/webhooks/channels/booking_com \
+  -H "Authorization: Bearer dev-channel-webhook-secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "externalBookingId": "BDC-DEMO-001",
+    "externalRoomTypeId": "BDC-STD-001",
+    "guestName": "Booking Guest",
+    "phone": "02012345678",
+    "checkInDate": "2026-08-10",
+    "checkOutDate": "2026-08-12",
+    "guestsCount": 2,
+    "status": "booked"
+  }'
+```
+
+### Demo webhook (mock Agoda)
+
+```bash
+curl -X POST http://localhost:3000/api/webhooks/channels/agoda \
+  -H "Authorization: Bearer dev-channel-webhook-secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "externalBookingId": "AGD-DEMO-001",
+    "externalRoomTypeId": "AGD-DLX-001",
+    "guestName": "OTA Guest",
+    "phone": "02012345678",
+    "checkInDate": "2026-08-01",
+    "checkOutDate": "2026-08-03",
+    "guestsCount": 2,
+    "status": "booked"
+  }'
+```
+
+- Admin sync: `/app/channels/{id}` → **Sync now**
+- Logs + retry: `/app/channels/{id}/logs`
+
 ---
 
 ## 9. Tasks
 
-- [ ] Adapter interface + mock adapter + tests
-- [ ] Webhook endpoint + signature verification
-- [ ] Import reservation service (idempotent)
-- [ ] Push availability job (cron / Bun scheduler)
-- [ ] Sync log UI + manual retry
-- [ ] Integrate OTA จริง 1 แพลตฟอร์ม
-- [ ] Runbook + demo seed channel records
-- [ ] Alert Admin เมื่อ sync failed ติดต่อกัน
+- [x] Adapter interface + mock adapter + tests
+- [x] Webhook endpoint + signature verification
+- [x] Import reservation service (idempotent)
+- [x] Push availability job (cron / Bun scheduler)
+- [x] Sync log UI + manual retry
+- [x] Integrate OTA จริง 1 แพลตฟอร์ม (mock Agoda adapter สำหรับ demo)
+- [x] Runbook + demo seed channel records
+- [x] Alert Admin เมื่อ sync failed ติดต่อกัน
 
 ---
 
 ## 10. Definition of Done (Phase 2.4)
 
-- [ ] จอง OTA webhook 1 ครั้ง → reservation เดียว; retry ไม่ซ้ำ
-- [ ] จองห้องสุดท้ายในระบบ → OTA ไม่รับจองซ้ำ (ภายใน sync window)
-- [ ] Sync log ครบ push/pull + retry failed ได้
-- [ ] OTA จริง 1 แพลตฟอร์ม (หรือ mock + CSV สำหรับ demo)
+- [x] จอง OTA webhook 1 ครั้ง → reservation เดียว; retry ไม่ซ้ำ
+- [x] จองห้องสุดท้ายในระบบ → OTA ไม่รับจองซ้ำ (ภายใน sync window)
+- [x] Sync log ครบ push/pull + retry failed ได้
+- [x] OTA จริง 1 แพลตฟอร์ม (mock Agoda + webhook demo)

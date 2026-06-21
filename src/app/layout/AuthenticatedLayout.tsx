@@ -11,6 +11,7 @@ import {
   SidebarRail,
 } from "@/components/kit";
 import { useAuthState } from "@/modules/auth/presentation/model/useAuthState";
+import { useHousekeepingEvents } from "@/modules/housekeeping/presentation/api/events";
 import { getCookie } from "@/shared/lib/cookies";
 import { SkipToMain } from "@/shared/ui/SkipToMain";
 import { LayoutProvider } from "../providers/LayoutProvider";
@@ -28,6 +29,12 @@ type AuthenticatedLayoutProps = {
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie("sidebar_state") !== "false";
   const { isLoading, isAuthenticated } = useAuthState();
+  useHousekeepingEvents(isAuthenticated, {
+    notifyDirectBooking: true,
+    notifyChannelBooking: true,
+    notifyRoomReady: true,
+    osNotifyRoomReady: true,
+  });
   const navigate = useNavigate({ from: "/app" });
   const { devicePermission, deviceSupported, enableDeviceNotifications } =
     useNotifications();

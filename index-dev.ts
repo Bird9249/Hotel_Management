@@ -1,5 +1,5 @@
-import { serve } from "bun";
 import { renderBookingPage } from "@/modules/booking-engine/presentation/ssr/render";
+import { serve } from "bun";
 import indexHtml from "./src/index.html";
 import app from "./src/server/index.js";
 

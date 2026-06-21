@@ -1,5 +1,4 @@
 import { randomUUIDv7 } from "bun";
-import { getChannelByCode } from "@/modules/channels/domain/repo/get-channel-by-code";
 import { createGuest } from "@/modules/guests/domain/repo/create-guest";
 import { publishHousekeepingEvent } from "@/modules/housekeeping/domain/events/housekeeping-events";
 import { createReservation } from "@/modules/reservations/domain/repo/create-reservation";
@@ -62,7 +61,6 @@ export async function confirmBookingService(
     code = createBookingCode();
   }
 
-  const directChannel = await getChannelByCode("direct_web", client);
   const reservation = await createReservation(
     {
       id: randomUUIDv7(),
@@ -73,7 +71,7 @@ export async function confirmBookingService(
       guestsCount: params.input.guestsCount,
       status: "booked",
       source: "direct_web",
-      channelId: directChannel?.id ?? null,
+      channelId: null,
       externalBookingId: code,
       externalPayload: {
         source: "booking_engine",

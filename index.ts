@@ -1,7 +1,7 @@
+import { renderBookingPage } from "@/modules/booking-engine/presentation/ssr/render";
+import { serve } from "bun";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { serve } from "bun";
-import { renderBookingPage } from "@/modules/booking-engine/presentation/ssr/render";
 import compliedApp from "./out/server/main";
 
 // Helper function to find file with hash pattern in production
