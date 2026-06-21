@@ -16,6 +16,7 @@
 | 2.2 | [`PHASE_2_2_HK_MOBILE.md`](./PHASE_2_2_HK_MOBILE.md) | PWA `/m/housekeeping` — mobile UI แม่บ้าน |
 | 2.3 | [`PHASE_2_3_BOOKING_ENGINE.md`](./PHASE_2_3_BOOKING_ENGINE.md) | Direct Booking — หน้า public `/book` |
 | 2.4 | [`PHASE_2_4_CHANNEL_MANAGER.md`](./PHASE_2_4_CHANNEL_MANAGER.md) | OTA sync — webhook + push availability |
+| 2.5 | [`PHASE_2_5_REPORTING.md`](./PHASE_2_5_REPORTING.md) | ขยาย reports — ช่องทางจอง + HK productivity |
 
 > MVP: [`../../mvp/implementation/README.md`](../../mvp/implementation/README.md)
 
@@ -27,8 +28,12 @@
 2.0  Foundation  ──►  2.3  Booking Engine
         │                      │
         │                      └──►  2.4  Channel Manager (OTA)
+        │                                    │
+        │                                    └──►  2.5  Reporting Extensions
         │
         ├──►  2.1  HK Shift  ──►  2.2  HK Mobile
+        │              │
+        │              └──────────────────────────►  2.5  Reporting Extensions
 ```
 
 ---

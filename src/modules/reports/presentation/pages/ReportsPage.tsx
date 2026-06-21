@@ -4,29 +4,36 @@ import { useMemo, useState } from "react";
 import { Header } from "@/app/layout/Header";
 import { Main } from "@/app/layout/Main";
 import {
+  Button,
   Card,
   CardContent,
   Skeleton,
   Tabs,
   TabsContent,
-  TabsList,
-  TabsTrigger,
 } from "@/components/kit";
 import { formatMoney } from "@/modules/billing/presentation/ui/invoice-status";
+import { useChannelsQuery } from "@/modules/channels/presentation/api/queries";
 import {
+  useBookingsBySourceQuery,
   useDailyCashQuery,
   useDailySalesQuery,
+  useHkProductivityQuery,
   useOccupancyQuery,
+  useRevenueBySourceQuery,
   useSalesByShiftQuery,
   useShiftReconciliationQuery,
 } from "../api/queries";
 import {
+  exportBookingsBySourceCsv,
   exportDailyCashCsv,
   exportDailySalesCsv,
+  exportHkProductivityCsv,
   exportOccupancyCsv,
+  exportRevenueBySourceCsv,
   exportSalesByShiftCsv,
   exportShiftReconciliationCsv,
 } from "../lib/export-csv";
+import { collectSourceKeys, sumBySourceKeys } from "../lib/source-report";
 import { DailyCashReport } from "../ui/DailyCashReport";
 import {
   DateRangePicker,
@@ -34,10 +41,16 @@ import {
   defaultReportDateRange,
 } from "../ui/DateRangePicker";
 import { ExportCsvButton } from "../ui/ExportCsvButton";
+import { HkProductivityTable } from "../ui/HkProductivityTable";
 import { OccupancyChart } from "../ui/OccupancyChart";
+import { ReportTabsNav } from "../ui/ReportTabsNav";
 import { SalesByShiftTable } from "../ui/SalesByShiftTable";
 import { SalesChart } from "../ui/SalesChart";
 import { ShiftReconciliationTable } from "../ui/ShiftReconciliationTable";
+import {
+  BookingsBySourceChart,
+  RevenueBySourceChart,
+} from "../ui/SourceCharts";
 import { StatCard } from "../ui/StatCard";
 
 function ReportLoadingSkeleton() {
@@ -62,14 +75,26 @@ function ReportEmpty({ message }: { message: string }) {
 
 export function ReportsPage() {
   const [range, setRange] = useState(defaultReportDateRange);
+  const [hkMode, setHkMode] = useState<"daily" | "shift">("daily");
   const params = useMemo(() => dateRangeToParams(range), [range]);
   const emptyParams = params ?? { from: "", to: "" };
+  const hkParams = useMemo(
+    () =>
+      params ? { ...params, mode: hkMode } : { from: "", to: "", mode: hkMode },
+    [params, hkMode],
+  );
+
+  const channelsQuery = useChannelsQuery();
+  const channels = channelsQuery.data ?? [];
 
   const sales = useDailySalesQuery(emptyParams);
   const occupancy = useOccupancyQuery(emptyParams);
   const shiftReconciliation = useShiftReconciliationQuery(emptyParams);
   const salesByShift = useSalesByShiftQuery(emptyParams);
   const dailyCash = useDailyCashQuery(emptyParams);
+  const bookingsBySource = useBookingsBySourceQuery(emptyParams);
+  const revenueBySource = useRevenueBySourceQuery(emptyParams);
+  const hkProductivity = useHkProductivityQuery(hkParams);
 
   const salesTotal = useMemo(
     () => (sales.data ?? []).reduce((sum, row) => sum + row.grandTotal, 0),
@@ -101,6 +126,53 @@ export function ReportsPage() {
     };
   }, [shiftReconciliation.data, salesByShift.data]);
 
+  const bookingSourceStats = useMemo(() => {
+    const rows = bookingsBySource.data ?? [];
+    const sourceKeys = collectSourceKeys(rows);
+    const totals = sumBySourceKeys(rows, sourceKeys);
+    const directTotal = totals.direct_web ?? 0;
+    const otaTotal = Object.entries(totals).reduce((sum, [key, count]) => {
+      if (key === "front_desk" || key === "direct_web" || key === "other") {
+        return sum;
+      }
+      return sum + count;
+    }, 0);
+    const grandTotal = rows.reduce((sum, row) => sum + row.grandTotal, 0);
+    return { directTotal, otaTotal, grandTotal };
+  }, [bookingsBySource.data]);
+
+  const revenueSourceTotal = useMemo(
+    () =>
+      (revenueBySource.data ?? []).reduce(
+        (sum, row) => sum + row.grandTotal,
+        0,
+      ),
+    [revenueBySource.data],
+  );
+
+  const hkStats = useMemo(() => {
+    const data = hkProductivity.data;
+    if (!data) {
+      return { roomsCompleted: 0, shiftsClosed: 0 };
+    }
+    if (data.mode === "daily") {
+      return {
+        roomsCompleted: data.rows.reduce(
+          (sum, row) => sum + row.roomsCompleted,
+          0,
+        ),
+        shiftsClosed: data.rows.reduce((sum, row) => sum + row.shiftsClosed, 0),
+      };
+    }
+    return {
+      roomsCompleted: data.rows.reduce(
+        (sum, row) => sum + row.roomsCompleted,
+        0,
+      ),
+      shiftsClosed: data.rows.length,
+    };
+  }, [hkProductivity.data]);
+
   const rangeLabel =
     range.from && range.to
       ? `${format(range.from, "dd/MM/yyyy")} – ${format(range.to, "dd/MM/yyyy")}`
@@ -117,22 +189,14 @@ export function ReportsPage() {
               ລາຍງານ
             </h2>
             <p className="text-muted-foreground">
-              ລາຍຮັບ, ການເຂົ້າພັກ ແລະ ກະເງິນສົດ.
+              ລາຍຮັບ, ການເຂົ້າພັກ, ຊ່ອງທາງຈອງ ແລະ ຜົນງານແມ່ບ້ານ.
             </p>
           </div>
           <DateRangePicker value={range} onChange={setRange} />
         </div>
 
         <Tabs defaultValue="sales" className="gap-4">
-          <TabsList className="h-auto flex-wrap">
-            <TabsTrigger value="sales">ລາຍຮັບ</TabsTrigger>
-            <TabsTrigger value="occupancy">ອັດຕາເຂົ້າພັກ</TabsTrigger>
-            <TabsTrigger value="shift-reconciliation">
-              ລາຍງານກະເງິນສົດ
-            </TabsTrigger>
-            <TabsTrigger value="sales-by-shift">ຍອດຂາຍຕາມກະ</TabsTrigger>
-            <TabsTrigger value="daily-cash">ຍອດເງິນສົດປະຈຳວັນ</TabsTrigger>
-          </TabsList>
+          <ReportTabsNav />
 
           <TabsContent value="sales" className="flex flex-col gap-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -151,7 +215,8 @@ export function ReportsPage() {
                   sales.data.length === 0
                 }
                 onExport={() => {
-                  if (params && sales.data) exportDailySalesCsv(sales.data, params);
+                  if (params && sales.data)
+                    exportDailySalesCsv(sales.data, params);
                 }}
               />
             </div>
@@ -202,7 +267,10 @@ export function ReportsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="shift-reconciliation" className="flex flex-col gap-4">
+          <TabsContent
+            value="shift-reconciliation"
+            className="flex flex-col gap-4"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <StatCard
@@ -306,6 +374,168 @@ export function ReportsPage() {
               />
             ) : (
               <ReportEmpty message="ບໍ່ມີກະທີ່ປິດໃນຊ່ວງວັນທີນີ້" />
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="bookings-by-source"
+            className="flex flex-col gap-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <StatCard
+                  label="ການຈອງລວມ"
+                  value={String(bookingSourceStats.grandTotal)}
+                  hint={rangeLabel || undefined}
+                />
+                <StatCard
+                  label="Direct / ເວັບ"
+                  value={String(bookingSourceStats.directTotal)}
+                  hint={
+                    bookingSourceStats.grandTotal > 0
+                      ? `${Math.round((bookingSourceStats.directTotal / bookingSourceStats.grandTotal) * 1000) / 10}%`
+                      : undefined
+                  }
+                />
+                <StatCard
+                  label="OTA"
+                  value={String(bookingSourceStats.otaTotal)}
+                  hint={
+                    bookingSourceStats.grandTotal > 0
+                      ? `${Math.round((bookingSourceStats.otaTotal / bookingSourceStats.grandTotal) * 1000) / 10}%`
+                      : undefined
+                  }
+                />
+              </div>
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  bookingsBySource.isLoading ||
+                  !bookingsBySource.data ||
+                  bookingsBySource.data.length === 0
+                }
+                onExport={() => {
+                  if (params && bookingsBySource.data) {
+                    exportBookingsBySourceCsv(
+                      bookingsBySource.data,
+                      params,
+                      channels,
+                    );
+                  }
+                }}
+              />
+            </div>
+            {bookingsBySource.isLoading ? (
+              <ReportLoadingSkeleton />
+            ) : bookingsBySource.data && bookingsBySource.data.length > 0 ? (
+              <BookingsBySourceChart
+                data={bookingsBySource.data}
+                channels={channels}
+                description={rangeLabel || undefined}
+              />
+            ) : (
+              <ReportEmpty message="ບໍ່ມີການຈອງໃນຊ່ວງວັນທີນີ້" />
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="revenue-by-source"
+            className="flex flex-col gap-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="ລາຍຮັບຕາມຊ່ອງທາງລວມ"
+                  value={`${formatMoney(revenueSourceTotal)} ₭`}
+                  hint={rangeLabel || undefined}
+                />
+              </div>
+              <ExportCsvButton
+                disabled={
+                  !params ||
+                  revenueBySource.isLoading ||
+                  !revenueBySource.data ||
+                  revenueBySource.data.length === 0
+                }
+                onExport={() => {
+                  if (params && revenueBySource.data) {
+                    exportRevenueBySourceCsv(
+                      revenueBySource.data,
+                      params,
+                      channels,
+                    );
+                  }
+                }}
+              />
+            </div>
+            {revenueBySource.isLoading ? (
+              <ReportLoadingSkeleton />
+            ) : revenueBySource.data && revenueBySource.data.length > 0 ? (
+              <RevenueBySourceChart
+                data={revenueBySource.data}
+                channels={channels}
+                description={rangeLabel || undefined}
+              />
+            ) : (
+              <ReportEmpty message="ບໍ່ມີລາຍຮັບຕາມຊ່ອງທາງໃນຊ່ວງວັນທີນີ້" />
+            )}
+          </TabsContent>
+
+          <TabsContent value="hk-productivity" className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="ຫ້ອງເສັດລວມ"
+                  value={String(hkStats.roomsCompleted)}
+                  hint={rangeLabel || undefined}
+                />
+                <StatCard
+                  label="ກະທີ່ປິດ"
+                  value={String(hkStats.shiftsClosed)}
+                  hint={hkMode === "daily" ? "ສະຫຼຸບຕາມວັນ" : "ລາຍການຕາມກະ"}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={hkMode === "daily" ? "default" : "outline"}
+                  onClick={() => setHkMode("daily")}
+                >
+                  ຕາມວັນ
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={hkMode === "shift" ? "default" : "outline"}
+                  onClick={() => setHkMode("shift")}
+                >
+                  ຕາມກະ
+                </Button>
+                <ExportCsvButton
+                  disabled={
+                    !params ||
+                    hkProductivity.isLoading ||
+                    !hkProductivity.data ||
+                    hkProductivity.data.rows.length === 0
+                  }
+                  onExport={() => {
+                    if (params && hkProductivity.data) {
+                      exportHkProductivityCsv(hkProductivity.data, params);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            {hkProductivity.isLoading ? (
+              <ReportLoadingSkeleton />
+            ) : hkProductivity.data && hkProductivity.data.rows.length > 0 ? (
+              <HkProductivityTable
+                data={hkProductivity.data}
+                description={rangeLabel || undefined}
+              />
+            ) : (
+              <ReportEmpty message="ບໍ່ມີຂໍ້ມູນກະແມ່ບ້ານໃນຊ່ວງວັນທີນີ້" />
             )}
           </TabsContent>
         </Tabs>

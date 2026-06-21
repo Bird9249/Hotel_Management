@@ -1,29 +1,12 @@
 import { Outlet, useNavigate } from "@tanstack/react-router";
-import { BedDouble, ConciergeBell, Hotel, ReceiptText } from "lucide-react";
+import { Hotel } from "lucide-react";
 import { useEffect } from "react";
 import { Loader } from "@/components/kit";
 import { ModeToggle } from "@/components/mode-toggle";
 import { getPostLoginRoute } from "@/modules/auth/presentation/lib/post-login-route";
 import { useAuthState } from "@/modules/auth/presentation/model/useAuthState";
+import { loginHighlights } from "./data/login-highlights";
 import { sidebarData } from "./data/sidebar-data";
-
-const highlights = [
-  {
-    icon: ConciergeBell,
-    title: "ໜ້າຮັບແຂກ",
-    description: "ເຊັກອິນ–ເຊັກເອົາ ແລະ ຈັດການແຂກມາຮອດ",
-  },
-  {
-    icon: BedDouble,
-    title: "ຫ້ອງພັກ",
-    description: "ສະຖານະຫ້ອງ ແລະ ປະເພດຫ້ອງແບບຮີລໄທມ",
-  },
-  {
-    icon: ReceiptText,
-    title: "ໃບບິນ",
-    description: "ອອກໃບບິນ ແລະ ບັນທຶກການຊໍາລະເງິນ",
-  },
-] as const;
 
 export function AuthLayout() {
   const { isLoading, isAuthenticated, permissions } = useAuthState();
@@ -83,12 +66,12 @@ export function AuthLayout() {
               ໃຫ້ເປັນລະບົບດຽວ
             </h2>
             <p className="max-w-md text-primary-foreground/75 text-sm leading-relaxed">
-              ເຂົ້າສູ່ລະບົບເພື່ອຈັດການການຈອງ ຫ້ອງພັກ ແຂກ ແລະ ການເງິນໃນແຜງຄວບຄຸມດຽວ
+              ເຂົ້າສູ່ລະບົບເພື່ອຈັດການຈອງ ຫ້ອງພັກ ແຂກ ໃບບິນ ແລະ ລາຍງານໃນແຜງຄວບຄຸມດຽວ
             </p>
           </div>
 
           <ul className="flex flex-col gap-4">
-            {highlights.map((item) => (
+            {loginHighlights.map((item) => (
               <li key={item.title} className="flex items-start gap-3">
                 <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-foreground/10 ring-1 ring-primary-foreground/15">
                   <item.icon className="size-4" />

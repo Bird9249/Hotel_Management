@@ -2,10 +2,13 @@ import { Elysia } from "elysia";
 import { Permissions } from "@/modules/roles/domain/contracts/permissions";
 import { requirePermission } from "@/modules/roles/domain/http/middleware";
 import { serverContext } from "@/server/platform/http/context";
-import { DateRangeQuerySchema } from "../contracts";
+import { DateRangeQuerySchema, HkProductivityQuerySchema } from "../contracts";
+import { getBookingsBySource } from "../service/get-bookings-by-source";
 import { getDailyCashSummary } from "../service/get-daily-cash-summary";
 import { getDailySales } from "../service/get-daily-sales";
+import { getHkProductivity } from "../service/get-hk-productivity";
 import { getOccupancy } from "../service/get-occupancy";
+import { getRevenueBySource } from "../service/get-revenue-by-source";
 import { getSalesByShift } from "../service/get-sales-by-shift";
 import { getShiftReconciliation } from "../service/get-shift-reconciliation";
 import { getSummary } from "../service/get-summary";
@@ -33,8 +36,7 @@ export const hotelReportsRoutes = new Elysia()
   })
   .get(
     "/reports/shift-reconciliation",
-    async ({ db, query }) =>
-      getShiftReconciliation(query.from, query.to, db),
+    async ({ db, query }) => getShiftReconciliation(query.from, query.to, db),
     {
       beforeHandle: requirePermission(Permissions.reports.read),
       query: DateRangeQuerySchema,
@@ -54,5 +56,30 @@ export const hotelReportsRoutes = new Elysia()
     {
       beforeHandle: requirePermission(Permissions.reports.read),
       query: DateRangeQuerySchema,
+    },
+  )
+  .get(
+    "/reports/bookings-by-source",
+    async ({ db, query }) => getBookingsBySource(query.from, query.to, db),
+    {
+      beforeHandle: requirePermission(Permissions.reports.read),
+      query: DateRangeQuerySchema,
+    },
+  )
+  .get(
+    "/reports/revenue-by-source",
+    async ({ db, query }) => getRevenueBySource(query.from, query.to, db),
+    {
+      beforeHandle: requirePermission(Permissions.reports.read),
+      query: DateRangeQuerySchema,
+    },
+  )
+  .get(
+    "/reports/hk-productivity",
+    async ({ db, query }) =>
+      getHkProductivity(query.from, query.to, query.mode, db),
+    {
+      beforeHandle: requirePermission(Permissions.reports.read),
+      query: HkProductivityQuerySchema,
     },
   );

@@ -1,6 +1,7 @@
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, eq, gte, lt, ne, sql } from "drizzle-orm";
 import type { DbClient } from "@/server/platform/db/client";
 import { payment } from "@/server/platform/db/schema/billing";
+import { hkRoomTask } from "@/server/platform/db/schema/housekeeping";
 import { reservation } from "@/server/platform/db/schema/reservations";
 import { room } from "@/server/platform/db/schema/rooms";
 import type { DbTransaction } from "@/shared/types";
@@ -88,5 +89,59 @@ export async function queryTodayDepartures(
         eq(reservation.status, "checked_in"),
       ),
     );
+  return row?.count ?? 0;
+}
+
+export async function queryTodayBookingsBySource(
+  client: DbTransaction | DbClient,
+  day = todayIso(),
+) {
+  const exclusiveTo = toExclusiveEnd(day);
+
+  const rows = await client
+    .select({
+      sourceKey:
+        sql<string>`coalesce(${reservation.channelId}, ${reservation.source})`.as(
+          "source_key",
+        ),
+      total: sql<number>`count(*)::int`.as("total"),
+    })
+    .from(reservation)
+    .where(
+      and(
+        gte(reservation.createdAt, sql`${day}::date`),
+        lt(reservation.createdAt, sql`${exclusiveTo}::date`),
+        ne(reservation.status, "cancelled"),
+      ),
+    )
+    .groupBy(sql`coalesce(${reservation.channelId}, ${reservation.source})`);
+
+  const totalsBySource: Record<string, number> = {};
+  let grandTotal = 0;
+  for (const row of rows) {
+    totalsBySource[row.sourceKey] = row.total;
+    grandTotal += row.total;
+  }
+
+  return { totalsBySource, grandTotal };
+}
+
+export async function queryTodayHkCompleted(
+  client: DbTransaction | DbClient,
+  day = todayIso(),
+) {
+  const exclusiveTo = toExclusiveEnd(day);
+
+  const [row] = await client
+    .select({ count: sql<number>`count(*)::int`.as("count") })
+    .from(hkRoomTask)
+    .where(
+      and(
+        eq(hkRoomTask.status, "done"),
+        gte(hkRoomTask.completedAt, sql`${day}::date`),
+        lt(hkRoomTask.completedAt, sql`${exclusiveTo}::date`),
+      ),
+    );
+
   return row?.count ?? 0;
 }

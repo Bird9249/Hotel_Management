@@ -6,3 +6,9 @@ export const DateRangeQuerySchema = z.object({
 });
 
 export type DateRangeQuery = z.infer<typeof DateRangeQuerySchema>;
+
+export const HkProductivityQuerySchema = DateRangeQuerySchema.extend({
+  mode: z.enum(["daily", "shift"]).default("daily"),
+});
+
+export type HkProductivityQuery = z.infer<typeof HkProductivityQuerySchema>;

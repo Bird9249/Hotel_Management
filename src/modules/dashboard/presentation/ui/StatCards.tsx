@@ -1,4 +1,4 @@
-import { LogIn, LogOut, Percent, Wallet } from "lucide-react";
+import { BedDouble, LogIn, LogOut, Percent, Sparkles, Wallet } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,19 +9,30 @@ import {
 } from "@/components/kit";
 import { usePermissions } from "@/modules/auth/presentation/model/usePermissions";
 import { formatMoney } from "@/modules/billing/presentation/ui/invoice-status";
+import { useChannelsQuery } from "@/modules/channels/presentation/api/queries";
 import { useReportSummaryQuery } from "@/modules/reports/presentation/api/queries";
+import { getSourceLabel } from "@/modules/reports/presentation/lib/source-report";
 
 export function StatCards() {
   const { has } = usePermissions();
   const canReadReports = has("reports:read");
   const summary = useReportSummaryQuery(canReadReports);
+  const channelsQuery = useChannelsQuery();
+  const channels = channelsQuery.data ?? [];
 
   if (!canReadReports) return null;
 
   if (summary.isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {["revenue", "occupancy", "arrivals", "departures"].map((key) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          "revenue",
+          "occupancy",
+          "arrivals",
+          "departures",
+          "bookings",
+          "hk",
+        ].map((key) => (
           <Card key={key}>
             <CardHeader>
               <Skeleton className="h-4 w-24" />
@@ -35,6 +46,11 @@ export function StatCards() {
 
   const data = summary.data;
   const occupancyPct = data ? Math.round(data.occupancy.rate * 1000) / 10 : 0;
+  const bookingsBySource = data?.bookingsBySource.totalsBySource ?? {};
+  const bookingBreakdown = Object.entries(bookingsBySource)
+    .filter(([, count]) => count > 0)
+    .map(([key, count]) => `${getSourceLabel(key, channels)} ${count}`)
+    .join(" · ");
 
   const cards = [
     {
@@ -67,10 +83,24 @@ export function StatCards() {
       hint: "ລໍຖ້າ check-out",
       icon: LogOut,
     },
+    {
+      key: "bookings",
+      label: "ຈອງໃໝ່ມື້ນີ້",
+      value: String(data?.bookingsBySource.grandTotal ?? 0),
+      hint: bookingBreakdown || "ຍັງບໍ່ມີການຈອງໃໝ່",
+      icon: Sparkles,
+    },
+    {
+      key: "hk",
+      label: "ຫ້ອງ HK ເສັດມື້ນີ້",
+      value: String(data?.hkRoomsCompletedToday ?? 0),
+      hint: "ຈາກການທຳຄວາມສະອາດຫ້ອງ",
+      icon: BedDouble,
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map((stat) => (
         <Card key={stat.key}>
           <CardHeader>

@@ -12,11 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/kit";
-import { ShiftStatusBadge } from "@/modules/billing/presentation/ui/ShiftStatusBadge";
 import {
   formatMoney,
   PAYMENT_METHOD_OPTIONS,
 } from "@/modules/billing/presentation/ui/invoice-status";
+import { ShiftStatusBadge } from "@/modules/billing/presentation/ui/ShiftStatusBadge";
 import type { SalesByShiftResult } from "@/modules/reports/domain/types";
 
 type SalesByShiftTableProps = {

@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { type DateRangeParams, reportsApi } from "./client";
+import {
+  type DateRangeParams,
+  type HkProductivityParams,
+  reportsApi,
+} from "./client";
 
 export const reportsKeys = {
   all: ["reports"] as const,
@@ -11,6 +15,12 @@ export const reportsKeys = {
   salesByShift: (q: DateRangeParams) =>
     ["reports", "sales-by-shift", q] as const,
   dailyCash: (q: DateRangeParams) => ["reports", "daily-cash", q] as const,
+  bookingsBySource: (q: DateRangeParams) =>
+    ["reports", "bookings-by-source", q] as const,
+  revenueBySource: (q: DateRangeParams) =>
+    ["reports", "revenue-by-source", q] as const,
+  hkProductivity: (q: HkProductivityParams) =>
+    ["reports", "hk-productivity", q] as const,
 };
 
 function useDateRangeQuery<T>(
@@ -77,6 +87,42 @@ export function useDailyCashQuery(query: DateRangeParams, enabled = true) {
   return useDateRangeQuery(
     reportsKeys.dailyCash(query),
     () => reportsApi.dailyCash(query),
+    query,
+    enabled,
+  );
+}
+
+export function useBookingsBySourceQuery(
+  query: DateRangeParams,
+  enabled = true,
+) {
+  return useDateRangeQuery(
+    reportsKeys.bookingsBySource(query),
+    () => reportsApi.bookingsBySource(query),
+    query,
+    enabled,
+  );
+}
+
+export function useRevenueBySourceQuery(
+  query: DateRangeParams,
+  enabled = true,
+) {
+  return useDateRangeQuery(
+    reportsKeys.revenueBySource(query),
+    () => reportsApi.revenueBySource(query),
+    query,
+    enabled,
+  );
+}
+
+export function useHkProductivityQuery(
+  query: HkProductivityParams,
+  enabled = true,
+) {
+  return useDateRangeQuery(
+    reportsKeys.hkProductivity(query),
+    () => reportsApi.hkProductivity(query),
     query,
     enabled,
   );

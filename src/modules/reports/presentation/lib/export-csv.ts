@@ -1,14 +1,18 @@
 import { format, parseISO } from "date-fns";
 import { PAYMENT_METHOD_OPTIONS } from "@/modules/billing/presentation/ui/invoice-status";
 import type {
+  BookingsBySourceResult,
   DailyCashSummaryResult,
   DailySalesResult,
+  HkProductivityResult,
   OccupancyResult,
+  RevenueBySourceResult,
   SalesByShiftResult,
   ShiftReconciliationResult,
 } from "@/modules/reports/domain/types";
 import { buildCsv, downloadCsv } from "@/shared/lib/csv";
 import type { DateRangeParams } from "../api/client";
+import { collectSourceKeys, getSourceLabel } from "./source-report";
 
 function reportFilename(key: string, params: DateRangeParams): string {
   return `${key}_${params.from}_${params.to}.csv`;
@@ -139,6 +143,103 @@ export function exportDailyCashCsv(
       { header: "ຜົນຕ່າງລວມ", value: (row) => row.totalVariance },
     ],
     "daily-cash",
+    params,
+  );
+}
+
+function flattenSourceRows(
+  data: BookingsBySourceResult | RevenueBySourceResult,
+  channels: Array<{ id: string; name: string }>,
+) {
+  const sourceKeys = collectSourceKeys(data);
+  const rows: Array<{ day: string; source: string; value: number }> = [];
+
+  for (const row of data) {
+    for (const key of sourceKeys) {
+      const value = row.totalsBySource[key] ?? 0;
+      if (value === 0) continue;
+      rows.push({
+        day: row.day,
+        source: getSourceLabel(key, channels),
+        value,
+      });
+    }
+  }
+
+  return rows;
+}
+
+export function exportBookingsBySourceCsv(
+  data: BookingsBySourceResult,
+  params: DateRangeParams,
+  channels: Array<{ id: string; name: string }>,
+): void {
+  exportReport(
+    flattenSourceRows(data, channels),
+    [
+      { header: "ວັນທີ", value: (row) => formatDay(row.day) },
+      { header: "ຊ່ອງທາງ", value: (row) => row.source },
+      { header: "ຈຳນວນຈອງ", value: (row) => row.value },
+    ],
+    "bookings-by-source",
+    params,
+  );
+}
+
+export function exportRevenueBySourceCsv(
+  data: RevenueBySourceResult,
+  params: DateRangeParams,
+  channels: Array<{ id: string; name: string }>,
+): void {
+  exportReport(
+    flattenSourceRows(data, channels),
+    [
+      { header: "ວັນທີ", value: (row) => formatDay(row.day) },
+      { header: "ຊ່ອງທາງ", value: (row) => row.source },
+      { header: "ລາຍຮັບ", value: (row) => row.value },
+    ],
+    "revenue-by-source",
+    params,
+  );
+}
+
+export function exportHkProductivityCsv(
+  data: HkProductivityResult,
+  params: DateRangeParams,
+): void {
+  if (data.mode === "daily") {
+    exportReport(
+      data.rows,
+      [
+        { header: "ວັນທີ", value: (row) => formatDay(row.day) },
+        { header: "ຈຳນວນກະ", value: (row) => row.shiftsClosed },
+        { header: "ຫ້ອງເສັດ", value: (row) => row.roomsCompleted },
+        { header: "ຫ້ອງຄ້າງ", value: (row) => row.roomsPending },
+        {
+          header: "ເວລາສະເລ່ຍ (ນາທີ)",
+          value: (row) => row.avgMinutesPerRoom ?? "",
+        },
+      ],
+      "hk-productivity-daily",
+      params,
+    );
+    return;
+  }
+
+  exportReport(
+    data.rows,
+    [
+      { header: "ເປີດກະ", value: (row) => formatDateTime(row.openedAt) },
+      { header: "ປິດກະ", value: (row) => formatDateTime(row.closedAt) },
+      { header: "ພະນັກງານ", value: (row) => row.openedByName },
+      { header: "ຫ້ອງເສັດ", value: (row) => row.roomsCompleted },
+      { header: "ຫ້ອງຄ້າງ", value: (row) => row.roomsPending },
+      {
+        header: "ເວລາສະເລ່ຍ (ນາທີ)",
+        value: (row) => row.avgMinutesPerRoom ?? "",
+      },
+    ],
+    "hk-productivity-shift",
     params,
   );
 }

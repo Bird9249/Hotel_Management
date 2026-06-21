@@ -12,9 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/kit";
+import { formatMoney } from "@/modules/billing/presentation/ui/invoice-status";
 import { ShiftStatusBadge } from "@/modules/billing/presentation/ui/ShiftStatusBadge";
 import { ShiftVarianceBadge } from "@/modules/billing/presentation/ui/ShiftVarianceBadge";
-import { formatMoney } from "@/modules/billing/presentation/ui/invoice-status";
 import type { ShiftReconciliationResult } from "@/modules/reports/domain/types";
 
 type ShiftReconciliationTableProps = {

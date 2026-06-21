@@ -22,8 +22,9 @@
 **Deliverable:** เปิดกะ → ทำห้อง → ปิดกะส่งมอบ พร้อม snapshot ตัวเลข
 
 **นอกขอบเขต (Phase 2.1.1):**
-- รายงาน HK ใน reports (ห้อง/กะ/วัน)
 - Manager sign-off ข้ามกะ
+
+> รายงาน HK ใน reports (ห้อง/กะ/วัน) → ย้ายไป [`PHASE_2_5_REPORTING.md`](./PHASE_2_5_REPORTING.md)
 
 ---
 
